@@ -1,0 +1,52 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production / Build
+/dist
+/build
+/.next/
+/out/
+.vite
+
+# Debug logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# Secret / Key Files
+*.pem
+*.key
+*.cert
+*-firebase-adminsdk-*.json
+service-account.json
+supabase-key.txt
+.agents/
+
+# Project specific
+backend/config.local.js
+dashboard/.env.local
+landing/.env.local
