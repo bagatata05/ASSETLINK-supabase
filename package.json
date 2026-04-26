@@ -3,17 +3,15 @@
   "version": "1.0.0",
   "workspaces": [
     "landing",
-    "dashboard",
-    "backend"
+    "dashboard"
   ],
   "description": "AssetLink is a school asset management and QR-enabled repair tracking web app for Philippine public schools under DepEd.",
   "main": "index.js",
   "scripts": {
-    "dev:backend": "npm run dev --prefix backend",
     "dev:dashboard": "npm run dev --prefix dashboard",
     "dev:landing": "npm run dev --prefix landing",
-    "dev": "concurrently --kill-others -n \"BACKEND,DASHBOARD,LANDING\" -c \"bgBlue.bold,bgCyan.bold,bgMagenta.bold\" \"npm run dev:backend\" \"npm run dev:dashboard\" \"npm run dev:landing\"",
-    "install:all": "npm install && npm install --prefix backend && npm install --prefix dashboard && npx pnpm --dir landing install",
+    "dev": "concurrently --kill-others -n \"DASHBOARD,LANDING\" -c \"bgCyan.bold,bgMagenta.bold\" \"npm run dev:dashboard\" \"npm run dev:landing\"",
+    "install:all": "npm install && npm install --prefix dashboard && npx pnpm --dir landing install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
