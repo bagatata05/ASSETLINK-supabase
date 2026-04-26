@@ -27,7 +27,7 @@ const TEAM: Member[] = [
   {
     name: "Saporno, John Christian",
     role: "Backend Developer",
-    focus: "Firebase services, backend API integration, and database security rules.",
+    focus: "Supabase services, real-time database synchronization, and security policies.",
     initials: "JC",
     accent: "bg-primary/10 text-primary",
   },
