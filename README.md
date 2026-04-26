@@ -9,25 +9,13 @@ AssetLink is a three-tier, QR-enabled asset management and repair tracking syste
 The project is structured as a **monorepo** with three distinct services working together:
 
 ### 1. `landing/` — The Public Face
-
-- **Role**: Marketing, value proposition, and user onboarding.
 - **Tech**: Next.js (App Router), Framer Motion, Lenis (Smooth Scroll), Tailwind CSS.
 - **Purpose**: Explains the system's impact and redirects users to the functional dashboard.
-- **Port**: `http://localhost:3000`
 
 ### 2. `dashboard/` — The Internal Engine
-
-- **Role**: Core productivity application for all user roles.
-- **Tech**: Vite, React, Radix UI, TanStack Query, Recharts.
+- **Tech**: Vite, React, Radix UI, Supabase SDK, Recharts.
 - **Purpose**: Role-based portal for scanning QR codes, reporting damage, and managing repair workflows.
-- **Port**: `http://localhost:5173`
-
-### 3. `backend/` — The Source of Truth
-
-- **Role**: API Service & Data Persistence.
-- **Tech**: Node.js, Express, Firebase (Admin).
-- **Purpose**: Manages the centralized database, handles business logic, and powers the dashboard.
-- **Port**: `http://localhost:3001`
+- **Database**: Supabase (Postgres + Real-time) serves as the unified source of truth.
 
 ---
 
@@ -54,9 +42,7 @@ The project is structured as a **monorepo** with three distinct services working
    pnpm install
    ```
 
-### Running Locally
-
-To start the entire system (Landing, Dashboard, and Backend) simultaneously, run:
+To start the system (Landing and Dashboard) simultaneously, run:
 
 ```bash
 pnpm dev
@@ -64,17 +50,14 @@ pnpm dev
 
 - **Landing Page**: Open `http://localhost:3000`
 - **Dashboard**: Open `http://localhost:5173`
-- **API Health**: Check `http://localhost:3001/`
+- **Data Source**: Managed via Supabase Cloud
 
 ---
-
-## 📋 Key Dependencies
 
 | Tier          | Primary Packages                                                          |
 | ------------- | ------------------------------------------------------------------------- |
 | **Landing**   | `next`, `framer-motion`, `lenis`, `lucide-react`, `tailwindcss`           |
-| **Dashboard** | `react`, `vite`, `@tanstack/react-query`, `@radix-ui/react-*`, `recharts` |
-| **Backend**   | `express`, `cors`, `firebase-admin`, `nodemon`, `helmet`                  |
+| **Dashboard** | `react`, `vite`, `@supabase/supabase-js`, `@radix-ui/react-*`, `recharts` |
 
 ---
 
@@ -92,7 +75,7 @@ The system is optimized for three primary school roles:
 
 1.  **Scan**: User arrives at the **Landing** page, clicks "Sign In".
 2.  **Report**: Teacher scans an asset QR code in the **Dashboard** to report damage.
-3.  **Triage**: Principal reviews the request (data fetched from **Backend**) and assigns it.
+3.  **Triage**: Principal reviews the request (synced via **Supabase**) and assigns it.
 4.  **Repair**: Maintenance staff receives a work order and updates the status.
 5.  **Verify**: Teacher signs off on the fix, ensuring accountability.
 
