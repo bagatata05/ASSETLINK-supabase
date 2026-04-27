@@ -8,7 +8,7 @@ const PILLARS = [
     title: "Agile Scrum with two-week sprints",
     bullets: [
       "Sprint 0: requirements, user stories, acceptance criteria",
-      "Iterative releases validated with pilot schools each sprint",
+      "Iterative releases validated with staff members each sprint",
       "Retrospectives logged and mapped to changelog entries",
     ],
   },
@@ -29,7 +29,7 @@ const PILLARS = [
     bullets: [
       "Public elementary and secondary school teachers and principals",
       "Division Maintenance and Operations personnel (DepEd)",
-      "Barangay officials in pilot LGU partnerships",
+      "Barangay officials in local LGU partnerships",
     ],
   },
   {
@@ -39,7 +39,7 @@ const PILLARS = [
     bullets: [
       "Pre- and post-deployment surveys (5-point Likert, Cronbach α ≥ 0.80)",
       "Semi-structured interviews with principals and maintenance staff",
-      "SUS (System Usability Scale) administered after pilot use",
+      "SUS (System Usability Scale) administered after full deployment",
     ],
   },
 ]

@@ -55,7 +55,7 @@ const ROWS: Row[] = [
   },
   {
     label: "Typical setup cost",
-    detail: "Per pilot school",
+    detail: "Per school",
     values: ["Forms + filing", "Per-seat SaaS", "Printable tags + web"],
   },
 ]

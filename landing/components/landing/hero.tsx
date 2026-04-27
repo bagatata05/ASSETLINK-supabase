@@ -66,6 +66,13 @@ export function Hero() {
           </StaggerItem>
 
           <StaggerItem
+            as="div"
+            className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold text-primary uppercase tracking-wider"
+          >
+            Official Portal for Guiwan Elementary School
+          </StaggerItem>
+
+          <StaggerItem
             as="h1"
             className="mt-6 font-serif text-4xl leading-[1.05] tracking-tight text-balance text-foreground md:text-5xl lg:text-6xl"
           >

@@ -194,7 +194,7 @@ function PrincipalDashboard() {
     <DashboardFrame title="Principal dashboard" breadcrumb="principal / triage">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">Bagumbayan Elementary School</p>
+          <p className="text-xs text-muted-foreground">Guiwan Elementary School</p>
           <p className="text-lg font-semibold">Good morning, Principal Reyes</p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/15 px-2.5 py-1 text-xs font-medium text-accent-foreground">

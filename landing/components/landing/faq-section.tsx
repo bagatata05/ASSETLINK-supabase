@@ -32,12 +32,12 @@ const FAQS = [
     a: "Admins print tags in batches from the admin dashboard onto weather-resistant sticker stock. If a tag is torn or missing, any authorized user can regenerate and reprint it from the asset's history page — the asset ID never changes, so the repair history stays intact.",
   },
   {
-    q: "What is the pilot commitment for a participating school?",
-    a: "A pilot typically runs for one academic quarter and requires one admin onboarding session (about 90 minutes) and one teacher orientation. Our team provides the tag print files and walk-through training materials. No hardware purchase is required beyond standard office printers and the phones staff already carry.",
+    q: "What is the commitment for Guiwan Elementary staff?",
+    a: "The system is designed for daily use. Teachers only need a 5-minute orientation to start reporting. Our maintenance team uses standard office equipment to manage repairs. No hardware purchase is required beyond the phones staff already carry.",
   },
   {
     q: "Is AssetLink open to other government or NGO use cases?",
-    a: "The core asset → scan → ticket → repair → verify flow generalizes well to barangay halls, rural health units, and day-care centers. We're prioritizing public schools first because that's the research focus, but the codebase is structured to onboard other asset owners with minimal change.",
+    a: "The core asset → scan → ticket → repair → verify flow generalizes well to barangay halls, rural health units, and day-care centers. We're prioritizing Guiwan Elementary first as our flagship implementation, but the codebase is structured for future scaling.",
   },
 ]
 
@@ -51,11 +51,10 @@ export function FaqSection() {
               Frequently asked
             </p>
             <h2 className="mt-3 font-serif text-3xl tracking-tight text-balance md:text-4xl">
-              Questions panelists, principals, and DepEd partners usually ask.
+              Questions our teachers and staff usually ask.
             </h2>
             <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
-              Straight answers on connectivity, privacy, cost, and how AssetLink fits alongside
-              existing DepEd records.
+              Straight answers on connectivity, privacy, and how AssetLink works for our school.
             </p>
           </div>
         </Reveal>
@@ -87,7 +86,7 @@ export function FaqSection() {
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Have another question?{" "}
           <a className="text-primary underline-offset-4 hover:underline" href="#demo">
-            Ask us during the pilot briefing
+            Ask your school IT coordinator
           </a>
           .
         </p>

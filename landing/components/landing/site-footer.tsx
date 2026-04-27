@@ -7,7 +7,7 @@ const COLUMNS = [
       { label: "How it works", href: "#how-it-works" },
       { label: "Role dashboards", href: "#roles" },
       { label: "Analytics", href: "#analytics" },
-      { label: "Pilot program", href: "#demo" },
+      { label: "Quick report", href: "#demo" },
     ],
   },
   {
@@ -70,7 +70,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-6 text-xs text-muted-foreground md:flex-row md:items-center">
           <p>
-            &copy; {new Date().getFullYear()} AssetLink capstone project. For academic and pilot use.
+            &copy; {new Date().getFullYear()} AssetLink capstone project. For academic and school use.
           </p>
           <p className="font-mono">
             SDG 4 · Quality Education · DepEd-aligned
