@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatsCard from '../../components/StatsCard';
 import StatusBadge from '../../components/StatusBadge';
@@ -12,24 +11,28 @@ export default function SupervisorDashboard() {
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const unsubRequests = onSnapshot(collection(db, 'repair_requests'), (snap) => {
-            const list = snap.docs
-                .map(doc => /** @type {any} */({ ...doc.data(), id: doc.id }))
-                .sort((a, b) => {
-                    const dateA = a.created_at?.toDate ? a.created_at.toDate() : new Date(0);
-                    const dateB = b.created_at?.toDate ? b.created_at.toDate() : new Date(0);
-                    return dateB - dateA;
-                });
-            setRequests(list);
+    const fetchData = async () => {
+        try {
+            const [{ data: reqData }, { data: assetData }] = await Promise.all([
+                supabase.from('repair_requests').select('*').order('created_at', { ascending: false }),
+                supabase.from('assets').select('*')
+            ]);
+            setRequests(reqData || []);
+            setAssets(assetData || []);
+        } catch (error) {
+            console.error('SupervisorDashboard error:', error);
+        } finally {
             setLoading(false);
-        });
+        }
+    };
 
-        const unsubAssets = onSnapshot(collection(db, 'assets'), (snap) => {
-            setAssets(snap.docs.map(doc => /** @type {any} */({ ...doc.data(), id: doc.id })));
-        });
-
-        return () => { unsubRequests(); unsubAssets(); };
+    useEffect(() => {
+        fetchData();
+        const channel = supabase.channel('supervisor-dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchData)
+            .subscribe();
+        return () => supabase.removeChannel(channel);
     }, []);
 
     if (loading) {
@@ -46,7 +49,6 @@ export default function SupervisorDashboard() {
 
     return (
         <div className="space-y-6 animate-fade-up">
-            {/* Page Header */}
             <div className="flex items-start justify-between">
                 <div>
                     <h1 className="text-xl font-semibold text-foreground tracking-tight">Regional Oversight</h1>
@@ -60,14 +62,12 @@ export default function SupervisorDashboard() {
                 </div>
             </div>
 
-            {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatsCard title="Total Assets" value={assets.length} subtitle="Regional inventory" icon={Package} color="blue" />
                 <StatsCard title="Open Requests" value={openRequestsCount} subtitle="Active resolution" icon={AlertTriangle} color="amber" />
                 <StatsCard title="Critical Issues" value={criticalCount} subtitle="Urgent intervention" icon={ShieldCheck} color="red" />
             </div>
 
-            {/* Escalated Incidents Table */}
             <div className="bg-card border border-border rounded-xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div className="flex items-center gap-3">

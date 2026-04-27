@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
     Menu, X, LogOut, LayoutDashboard, Package, AlertTriangle,
-    Wrench, BarChart3, CalendarDays, School, Eye, ChevronRight, Bell
+    Wrench, BarChart3, CalendarDays, School, Eye, ChevronRight, Bell, UserCircle, ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sileo } from 'sileo';
@@ -13,21 +13,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-    { path: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'teacher', 'principal', 'maintenance', 'supervisor'] },
-    { path: '/assets', label: 'Assets', icon: Package, roles: ['admin', 'teacher', 'principal'] },
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'teacher', 'principal', 'maintenance'] },
+    { path: '/assets', label: 'Assets', icon: Package, roles: ['admin', 'principal'] },
     { path: '/repair-requests', label: 'Repair Requests', icon: AlertTriangle, roles: ['admin', 'teacher', 'principal'] },
-    { path: '/report-damage', label: 'Report Damage', icon: AlertTriangle, roles: ['admin', 'teacher'] },
-    { path: '/tasks', label: 'My Tasks', icon: Wrench, roles: ['admin', 'maintenance'] },
+    { path: '/report-damage', label: 'Report Damage', icon: AlertTriangle, roles: ['teacher'] },
+    { path: '/tasks', label: 'My Tasks', icon: Wrench, roles: ['maintenance'] },
     { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'principal'] },
     { path: '/calendar', label: 'Calendar', icon: CalendarDays, roles: ['admin', 'maintenance', 'principal'] },
-    { path: '/schools', label: 'Schools', icon: School, roles: ['admin', 'supervisor'] },
-    { path: '/oversight', label: 'Oversight', icon: Eye, roles: ['supervisor'] },
+    { path: '/schools', label: 'Schools', icon: School, roles: ['admin', 'principal'] },
+    { path: '/profile', label: 'Profile', icon: UserCircle, roles: ['admin', 'teacher', 'principal', 'maintenance'] },
+    { path: '/user-approvals', label: 'User Approvals', icon: ShieldCheck, roles: ['admin', 'principal'] },
 ];
 
 const navGroups = [
     { label: 'Main', paths: ['/', '/assets', '/repair-requests', '/report-damage'] },
-    { label: 'Operations', paths: ['/tasks', '/calendar'] },
+    { label: 'Operations', paths: ['/tasks', '/calendar', '/user-approvals'] },
     { label: 'Intelligence', paths: ['/analytics', '/schools', '/oversight'] },
+    { label: 'Account', paths: ['/profile'] },
 ];
 
 export default function Layout() {

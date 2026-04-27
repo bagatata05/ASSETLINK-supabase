@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db, storage } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
 import { Wrench, CheckCircle, Clock, AlertCircle, Camera, Image as ImageIcon, UploadCloud, X, ArrowRight, Shield } from 'lucide-react';
@@ -33,55 +31,53 @@ export default function Tasks() {
     useEffect(() => {
         if (!currentUser) return;
 
-        let tasksQuery;
-        if (role === 'maintenance') {
-            // Maintenance staff only see tasks assigned to them
-            tasksQuery = query(
-                collection(db, 'maintenance_tasks'),
-                where('assigned_to_name', '==', currentUser.full_name)
-            );
-        } else {
-            // Admin/Principal see everything
-            tasksQuery = query(
-                collection(db, 'maintenance_tasks'),
-                orderBy('created_at', 'desc')
-            );
-        }
+        const fetchTasks = async () => {
+            const { data, error } = await supabase
+                .from('maintenance_tasks')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        const unsubscribe = onSnapshot(tasksQuery, (snapshot) => {
-            const tasksList = snapshot.docs.map(doc => {
-                /** @type {any} */
-                const data = doc.data();
-                return { ...data, id: doc.id };
-            });
-            
-            // Client-side sorting by date (descending)
-            const sorted = tasksList.sort((a, b) => {
-                /** @type {any} */ const taskA = a;
-                /** @type {any} */ const taskB = b;
-                const dateA = taskA.created_at?.toDate ? taskA.created_at.toDate() : new Date(0);
-                const dateB = taskB.created_at?.toDate ? taskB.created_at.toDate() : new Date(0);
-                return dateB - dateA;
-            });
+            if (!error && data) {
+                if (role === 'maintenance') {
+                    const myEmail = currentUser.email?.toLowerCase() || '';
+                    const myName = currentUser.full_name?.toLowerCase() || '';
+                    const myFirstName = myName.split(' ')[0] || '';
 
-            setTasks(sorted);
+                    const filtered = data.filter(t => {
+                        const assignedName = t.assigned_to_name?.toLowerCase() || '';
+                        const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
+                        return assignedEmail === myEmail || 
+                               assignedName.includes(myEmail) ||
+                               assignedName.includes(myFirstName) ||
+                               myName.includes(assignedName);
+                    });
+                    setTasks(filtered);
+                } else {
+                    setTasks(data);
+                }
+            } else if (error) {
+                console.error('[AssetLink] Maintenance Tasks Fetch Error:', error);
+            }
             setLoading(false);
-        }, (error) => {
-            console.error('[AssetLink] Maintenance Tasks Listener Error:', error);
-            setLoading(false);
-        });
+        };
 
-        return () => unsubscribe();
+        fetchTasks();
+
+        const channel = supabase.channel('maintenance_tasks_tasks')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, fetchTasks)
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
     }, [currentUser, role]);
 
     function openTask(task) {
         setSelected(task);
         setForm({ 
             status: task.status, 
-            notes: task.notes || '', 
+            notes: task.maintenance_notes || '', 
             materials_used: task.materials_used || '', 
-            actual_cost: task.actual_cost || '',
-            completion_photo: task.completion_photo || ''
+            actual_cost: task.cost || '',
+            completion_photo: task.completion_photo_url || ''
         });
     }
 
@@ -121,59 +117,31 @@ export default function Tasks() {
         const rawFile = e.target.files[0];
         if (!rawFile) return;
 
-        // @ts-ignore
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        // @ts-ignore
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-        if (cloudName === 'your_cloud_name' || !cloudName) {
-            sileo.error({ title: 'Config Required', description: 'Please set your Cloudinary keys in the .env file.' });
-            return;
-        }
-
         setUploading(true);
         setUploadProgress(0);
 
         try {
-            // Still compress image before Cloudinary for speed
             const file = await compressImage(rawFile);
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', uploadPreset);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `completion/${fileName}`;
 
-            // Using XMLHttpRequest to track progress since Cloudinary doesn't support progress in simple fetch
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, true);
+            const { error: uploadError } = await supabase.storage
+                .from('repair-evidence')
+                .upload(filePath, file);
 
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    const progress = (event.loaded / event.total) * 100;
-                    setUploadProgress(progress);
-                }
-            };
+            if (uploadError) throw uploadError;
 
-            xhr.onload = () => {
-                const response = JSON.parse(xhr.responseText);
-                if (xhr.status === 200) {
-                    setForm(prev => ({ ...prev, completion_photo: response.secure_url }));
-                    setUploading(false);
-                    sileo.success({ title: 'Upload Successful', description: 'Photo proof uploaded to Cloudinary.' });
-                } else {
-                    console.error(response);
-                    sileo.error({ title: 'Upload Failed', description: response.error?.message || 'Check Cloudinary settings.' });
-                    setUploading(false);
-                }
-            };
+            const { data: { publicUrl } } = supabase.storage
+                .from('repair-evidence')
+                .getPublicUrl(filePath);
 
-            xhr.onerror = () => {
-                sileo.error({ title: 'Upload Error', description: 'Network error or CORS issue with Cloudinary.' });
-                setUploading(false);
-            };
-
-            xhr.send(formData);
+            setForm(prev => ({ ...prev, completion_photo: publicUrl }));
+            sileo.success({ title: 'Upload Successful', description: 'Photo proof uploaded to Supabase.' });
         } catch (err) {
             console.error(err);
+            sileo.error({ title: 'Upload Failed', description: err.message || 'Check storage permissions.' });
+        } finally {
             setUploading(false);
         }
     }
@@ -181,35 +149,36 @@ export default function Tasks() {
     async function handleUpdate() {
         setSaving(true);
         try {
+            const now = new Date().toISOString();
             const updateData = {
                 status: form.status,
-                notes: form.notes,
-                materials_used: form.materials_used,
-                actual_cost: form.actual_cost ? parseFloat(form.actual_cost) : 0,
-                completion_photo: form.completion_photo,
-                updated_at: serverTimestamp()
+                maintenance_notes: form.notes,
+                cost: form.actual_cost ? parseFloat(form.actual_cost) : 0,
+                completion_photo_url: form.completion_photo,
+                updated_at: now
             };
 
             // Business Logic: If marked as Completed, move to verification stage
             if (form.status === 'Completed') {
                 updateData.status = 'Pending Teacher Verification';
-                updateData.completed_at = serverTimestamp();
+                updateData.completed_at = now;
             }
 
             // 1. Update the Maintenance Task
-            await updateDoc(doc(db, 'maintenance_tasks', selected.id), updateData);
+            const { error: error1 } = await supabase.from('maintenance_tasks').update(updateData).eq('id', selected.id);
+            if (error1) throw error1;
 
             // 2. Sync status to the original Repair Request
             if (selected.repair_request_id) {
-                await updateDoc(doc(db, 'repair_requests', selected.repair_request_id), {
+                const { error: error2 } = await supabase.from('repair_requests').update({
                     status: updateData.status,
                     maintenance_notes: form.notes,
                     materials_used: form.materials_used,
-                    actual_cost: updateData.actual_cost,
+                    actual_cost: updateData.cost, // use the float we parsed
                     completion_photo: form.completion_photo,
-                    maintenance_staff_name: selected.assigned_to_name,
-                    updated_at: serverTimestamp()
-                });
+                    updated_at: now
+                }).eq('id', selected.repair_request_id);
+                if (error2) throw error2;
             }
 
             sileo.success({
@@ -308,7 +277,7 @@ export default function Tasks() {
                                     <StatusBadge status={task.status} size="xs" />
                                 </div>
                                 <div className="hidden sm:block text-xs text-muted-foreground">
-                                    {task.created_at?.toDate ? format(task.created_at.toDate(), 'MMM d, yyyy') : 'Recent'}
+                                    {task.created_at ? format(new Date(task.created_at), 'MMM d, yyyy') : 'Recent'}
                                 </div>
                             </div>
                         ))}
@@ -317,98 +286,161 @@ export default function Tasks() {
             </div>
 
             <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Update Service Record</DialogTitle>
-                    </DialogHeader>
+                <DialogContent className="sm:max-w-4xl p-0 overflow-hidden border-none bg-background">
                     {selected && (
-                        <div className="space-y-4 pt-2">
-                            <div className="bg-muted p-3 rounded-md border border-border">
-                                <p className="text-sm font-medium text-foreground">{selected.asset_name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">{selected.school_name} | Ref: {selected.request_number}</p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Problem Reported</Label>
-                                <div className="bg-amber-500/10 p-3 rounded-md border border-amber-500/20">
-                                    <p className="text-sm text-foreground">
-                                        "{selected.description || 'No description provided'}"
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-2 text-right">
-                                        — Reported by {selected.reported_by_name || 'Teacher'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {selected.photo_url && (
-                                <div className="space-y-2">
-                                    <Label>Damage Evidence</Label>
-                                    <div className="rounded-md overflow-hidden border border-border">
-                                        <img src={selected.photo_url} alt="Evidence" className="w-full h-auto object-cover max-h-[200px]" />
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>Task Completion Proof</Label>
-                                    {form.completion_photo ? (
-                                        <div className="relative group rounded-md overflow-hidden border border-border">
-                                            <img src={form.completion_photo} alt="Proof" className="w-full h-auto object-cover max-h-[150px]" />
-                                            <button onClick={() => setForm({...form, completion_photo: ''})} className="absolute top-2 right-2 bg-destructive text-destructive-foreground p-1 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <X className="w-4 h-4" />
-                                            </button>
+                        <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
+                            {/* Left Side: Information & Evidence */}
+                            <div className="w-full md:w-5/12 bg-muted/30 border-r border-border p-6 overflow-y-auto">
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <StatusBadge status={selected.priority || 'Medium'} size="xs" />
+                                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{selected.request_number}</span>
                                         </div>
-                                    ) : (
-                                        <div className="relative border-2 border-dashed border-border rounded-md p-6 text-center hover:bg-muted transition-colors cursor-pointer group">
-                                            <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
-                                            <div className="flex flex-col items-center gap-2">
-                                                {uploading ? (
-                                                    <div className="flex flex-col items-center">
-                                                        <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-2" />
-                                                        <span className="text-xs text-muted-foreground">{Math.round(uploadProgress)}% Uploading...</span>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <UploadCloud className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                                                        <span className="text-xs text-muted-foreground">Click to upload proof</span>
-                                                    </>
-                                                )}
+                                        <h2 className="text-xl font-bold text-foreground tracking-tight">{selected.asset_name}</h2>
+                                        <p className="text-sm text-muted-foreground">{selected.school_name}</p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Reported Problem</Label>
+                                        <div className="bg-background border border-border p-4 rounded-xl shadow-sm">
+                                            <p className="text-sm text-foreground leading-relaxed italic">
+                                                "{selected.description || 'No description provided'}"
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/50">
+                                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                    {selected.reported_by_name?.charAt(0) || 'T'}
+                                                </div>
+                                                <span className="text-xs text-muted-foreground font-medium">Reported by {selected.reported_by_name || 'Staff'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {selected.photo_url && (
+                                        <div className="space-y-3">
+                                            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Damage Evidence (Before)</Label>
+                                            <div className="rounded-xl overflow-hidden border border-border bg-black/5 aspect-video relative group">
+                                                <img src={selected.photo_url} alt="Evidence" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                                                    <span className="text-[10px] text-white font-medium flex items-center gap-1">
+                                                        <ImageIcon className="w-3 h-3" /> Original Report Image
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
-
-                                <div className="space-y-2">
-                                    <Label>Current Progress</Label>
-                                    <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                                        <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {TASK_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Service Notes / Remarks</Label>
-                                    <Textarea rows={3} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="What was done to the asset?" className="h-auto min-h-[80px]" />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-2">
-                                        <Label>Materials Used</Label>
-                                        <Input value={form.materials_used} onChange={e => setForm({ ...form, materials_used: e.target.value })} placeholder="Nails, Wire, etc." className="h-9" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Total Cost (₱)</Label>
-                                        <Input type="number" value={form.actual_cost} onChange={e => setForm({ ...form, actual_cost: e.target.value })} placeholder="0.00" className="h-9" />
-                                    </div>
-                                </div>
                             </div>
 
-                            <Button onClick={handleUpdate} disabled={saving} className="w-full">
-                                {saving ? 'Syncing...' : 'Submit Update'}
-                            </Button>
+                            {/* Right Side: Update Form */}
+                            <div className="w-full md:w-7/12 p-8 overflow-y-auto bg-background">
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-semibold text-foreground">Protocol Update</h3>
+                                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                                            <Clock className="w-3 h-3" />
+                                            Assigned {selected.created_at ? format(new Date(selected.created_at), 'MMM d, h:mm a') : 'Recently'}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <Label className="text-xs font-semibold">Service Status</Label>
+                                            <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                                                <SelectTrigger className="h-10 bg-muted/20 border-border/60 hover:border-primary/50 transition-colors">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {TASK_STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <Label className="text-xs font-semibold">Resolution Proof (After)</Label>
+                                            {form.completion_photo ? (
+                                                <div className="relative group rounded-lg overflow-hidden border border-border aspect-[16/9]">
+                                                    <img src={form.completion_photo} alt="Proof" className="w-full h-full object-cover" />
+                                                    <button onClick={() => setForm({...form, completion_photo: ''})} className="absolute top-2 right-2 bg-destructive/90 backdrop-blur-sm text-destructive-foreground p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:scale-110">
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="relative border-2 border-dashed border-border/60 rounded-lg p-0 h-24 flex items-center justify-center hover:bg-muted/30 hover:border-primary/40 transition-all cursor-pointer group overflow-hidden">
+                                                    <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer z-10" disabled={uploading} />
+                                                    <div className="flex flex-col items-center gap-1.5">
+                                                        {uploading ? (
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-1" />
+                                                                <span className="text-[10px] font-bold text-primary">{Math.round(uploadProgress)}%</span>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <UploadCloud className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                                <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground">Upload Solution Proof</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-semibold">Maintenance Log / Remarks</Label>
+                                        <Textarea 
+                                            rows={4} 
+                                            value={form.notes} 
+                                            onChange={e => setForm({ ...form, notes: e.target.value })} 
+                                            placeholder="Detailed technical notes on what actions were taken to resolve the issue..." 
+                                            className="resize-none bg-muted/20 border-border/60 focus:bg-background focus:ring-1 transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <Label className="text-xs font-semibold">Components Used</Label>
+                                            <Input 
+                                                value={form.materials_used} 
+                                                onChange={e => setForm({ ...form, materials_used: e.target.value })} 
+                                                placeholder="e.g. Nails, wood glue, wire" 
+                                                className="h-10 bg-muted/20 border-border/60"
+                                            />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <Label className="text-xs font-semibold">Resolution Cost (₱)</Label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₱</span>
+                                                <Input 
+                                                    type="number" 
+                                                    value={form.actual_cost} 
+                                                    onChange={e => setForm({ ...form, actual_cost: e.target.value })} 
+                                                    placeholder="0.00" 
+                                                    className="h-10 pl-7 bg-muted/20 border-border/60"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Button 
+                                        onClick={handleUpdate} 
+                                        disabled={saving} 
+                                        className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                                    >
+                                        {saving ? (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                <span>Synchronizing Record...</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle className="w-4 h-4" />
+                                                <span>Submit Solution Protocol</span>
+                                            </div>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </DialogContent>

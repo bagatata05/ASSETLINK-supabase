@@ -6,8 +6,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { CalendarDays, AlertTriangle, Clock, Wrench, CheckCircle, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, parseISO, isToday } from 'date-fns';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 export default function PrincipalDashboard() {
@@ -15,14 +14,28 @@ export default function PrincipalDashboard() {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchRequests = async () => {
         if (!currentUser) return;
-        const q = query(collection(db, 'repair_requests'), orderBy('created_at', 'desc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setRequests(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+        try {
+            const { data, error } = await supabase
+                .from('repair_requests')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setRequests(data || []);
+        } catch (error) {
+            console.error('PrincipalDashboard error:', error);
+        } finally {
             setLoading(false);
-        });
-        return () => unsubscribe();
+        }
+    };
+
+    useEffect(() => {
+        fetchRequests();
+        const channel = supabase.channel('principal-dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchRequests)
+            .subscribe();
+        return () => supabase.removeChannel(channel);
     }, [currentUser]);
 
     if (loading) {
@@ -44,7 +57,6 @@ export default function PrincipalDashboard() {
 
     return (
         <div className="space-y-6 animate-fade-up">
-            {/* Page Header */}
             <div className="flex items-start justify-between">
                 <div>
                     <h1 className="text-xl font-semibold text-foreground tracking-tight">Executive Overview</h1>
@@ -73,7 +85,6 @@ export default function PrincipalDashboard() {
                 </div>
             </div>
 
-            {/* Stats Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatsCard title="Pending" value={pendingApproval.length} subtitle="Decision required" icon={Clock} color="amber" />
                 <StatsCard title="In Progress" value={inProgress.length} subtitle="Active work orders" icon={Wrench} color="blue" />
@@ -81,9 +92,7 @@ export default function PrincipalDashboard() {
                 <StatsCard title="Resolved" value={completed.length} subtitle="Completed repairs" icon={CheckCircle} color="teal" />
             </div>
 
-            {/* Main content grid */}
             <div className="grid lg:grid-cols-3 gap-4">
-                {/* Approval Queue Table */}
                 <div className="lg:col-span-2 bg-card border border-border rounded-xl overflow-hidden">
                     <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                         <div>
@@ -119,7 +128,7 @@ export default function PrincipalDashboard() {
                                         </div>
                                         <StatusBadge status={req.priority} size="sm" />
                                         <span className="label-mono text-muted-foreground/50 text-right">
-                                            {req.created_at?.toDate ? format(req.created_at.toDate(), 'MMM d') : ''}
+                                            {req.created_at ? format(new Date(req.created_at), 'MMM d') : ''}
                                         </span>
                                     </div>
                                 </Link>
@@ -128,9 +137,7 @@ export default function PrincipalDashboard() {
                     )}
                 </div>
 
-                {/* Right column */}
                 <div className="space-y-4">
-                    {/* System Health */}
                     <div className="bg-card border border-border rounded-xl p-5">
                         <h2 className="text-sm font-semibold text-foreground mb-4">System Health</h2>
                         <div className="space-y-3">
@@ -156,7 +163,6 @@ export default function PrincipalDashboard() {
                         </div>
                     </div>
 
-                    {/* Resolution Rate */}
                     <div className="bg-[hsl(222,47%,9%)] border border-[hsl(222,35%,16%)] rounded-xl p-5 text-white">
                         <div className="flex items-center gap-2 mb-3">
                             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -169,10 +175,7 @@ export default function PrincipalDashboard() {
                             {completed.length} of {requests.length} requests resolved
                         </p>
                         <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-emerald-500 rounded-full transition-all duration-700"
-                                style={{ width: `${resolutionRate}%` }}
-                            />
+                            <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${resolutionRate}%` }} />
                         </div>
                     </div>
                 </div>

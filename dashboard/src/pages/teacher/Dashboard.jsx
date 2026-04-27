@@ -6,8 +6,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { Package, AlertTriangle, Wrench, Clock, TrendingUp, Plus, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 export default function TeacherDashboard() {
@@ -16,31 +15,46 @@ export default function TeacherDashboard() {
     const [assets, setAssets] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchData = async () => {
         if (!currentUser) return;
 
-        const assetsQuery = query(collection(db, 'assets'), orderBy('created_at', 'desc'));
-        const unsubscribeAssets = onSnapshot(assetsQuery, (snapshot) => {
-            setAssets(snapshot.docs.map(doc => /** @type {any} */({ ...doc.data(), id: doc.id })));
-        });
+        try {
+            // 1. Fetch Assets
+            const { data: assetsData } = await supabase
+                .from('assets')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            setAssets(assetsData || []);
 
-        const requestsQuery = query(collection(db, 'repair_requests'), orderBy('created_at', 'desc'));
-        const unsubscribeRequests = onSnapshot(requestsQuery, (snapshot) => {
-            const teacherEmail = currentUser.email?.toLowerCase();
-            const teacherName = currentUser.full_name?.toLowerCase();
-            const list = snapshot.docs
-                .map(doc => /** @type {any} */({ ...doc.data(), id: doc.id }))
-                .filter(r => {
-                    const emailMatches = r.reported_by_email?.toLowerCase() === teacherEmail;
-                    const nameMatches = r.reported_by_name?.toLowerCase() === teacherName;
-                    const schoolMatches = r.school_id === currentUser.school_id;
-                    return emailMatches || nameMatches || (r.status === 'Pending Teacher Verification' && schoolMatches);
-                });
-            setRequests(list);
+            // 2. Fetch Repair Requests for this user or their school
+            const { data: requestsData } = await supabase
+                .from('repair_requests')
+                .select('*')
+                .or(`reported_by_email.eq.${currentUser.email},reported_by_name.eq.${currentUser.full_name},school_id.eq.${currentUser.school_id}`)
+                .order('created_at', { ascending: false });
+
+            setRequests(requestsData || []);
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+        } finally {
             setLoading(false);
-        });
+        }
+    };
 
-        return () => { unsubscribeAssets(); unsubscribeRequests(); };
+    useEffect(() => {
+        fetchData();
+
+        // Optional: Realtime subscription for "live" updates
+        const channel = supabase
+            .channel('dashboard-updates')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchData)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [currentUser]);
 
     const recent = requests.slice(0, 5);
@@ -127,7 +141,7 @@ export default function TeacherDashboard() {
                                         <div className="flex flex-col items-end gap-1">
                                             <StatusBadge status={req.status} size="sm" />
                                             <span className="label-mono text-muted-foreground/50">
-                                                {req.created_at?.toDate ? format(req.created_at.toDate(), 'MMM d') : ''}
+                                                {req.created_at ? format(new Date(req.created_at), 'MMM d') : ''}
                                             </span>
                                         </div>
                                     </div>

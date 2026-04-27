@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { 
     Eye, Search, Filter, ArrowUpRight, 
     ShieldAlert, Activity, CheckCircle2, 
@@ -18,27 +17,36 @@ export default function SupervisorOversight() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        // Real-time listeners for strategic oversight
-        const unsubAssets = onSnapshot(query(collection(db, 'assets')), (snapshot) => {
-            setAssets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        const unsubRequests = onSnapshot(query(collection(db, 'repair_requests')), (snapshot) => {
-            setRequests(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        });
-        const unsubSchools = onSnapshot(query(collection(db, 'schools'), orderBy('name', 'asc')), (snapshot) => {
-            setSchools(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const fetchData = async () => {
+        try {
+            const [{ data: assetData }, { data: reqData }, { data: schoolData }] = await Promise.all([
+                supabase.from('assets').select('*'),
+                supabase.from('repair_requests').select('*'),
+                supabase.from('schools').select('*').order('name', { ascending: true })
+            ]);
+            setAssets(assetData || []);
+            setRequests(reqData || []);
+            setSchools(schoolData || []);
+        } catch (error) {
+            console.error('SupervisorOversight error:', error);
+        } finally {
             setLoading(false);
-        });
+        }
+    };
 
-        return () => { unsubAssets(); unsubRequests(); unsubSchools(); };
+    useEffect(() => {
+        fetchData();
+        const channel = supabase.channel('supervisor-oversight')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'schools' }, fetchData)
+            .subscribe();
+        return () => supabase.removeChannel(channel);
     }, []);
 
-    // Oversight Analytics Calculation
     const getSchoolStats = (schoolId) => {
         const schoolAssets = assets.filter(a => a.school_id === schoolId);
         const schoolRequests = requests.filter(r => r.school_id === schoolId);
-        
         return {
             totalAssets: schoolAssets.length,
             criticalRequests: schoolRequests.filter(r => r.priority === 'Critical' && r.status !== 'Resolved').length,
@@ -68,7 +76,6 @@ export default function SupervisorOversight() {
 
     return (
         <div className="space-y-12 animate-fade-in pb-20 relative z-10 font-sans">
-            {/* Header Area */}
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
                 <div className="space-y-1.5">
                     <h1 className="text-4xl md:text-5xl font-serif font-black text-foreground tracking-tight leading-[1.1]">
@@ -78,7 +85,6 @@ export default function SupervisorOversight() {
                         High-fidelity monitoring of institutional resource health and tactical repair cycles.
                     </p>
                 </div>
-
                 <div className="flex items-center gap-4">
                     <div className="relative group min-w-[300px]">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -93,7 +99,6 @@ export default function SupervisorOversight() {
                 </div>
             </div>
 
-            {/* Strategic Metrics Grid */}
             <motion.div 
                 variants={containerVariants}
                 initial="initial"
@@ -123,7 +128,6 @@ export default function SupervisorOversight() {
                 ))}
             </motion.div>
 
-            {/* Jurisdictional Grid */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between px-2">
                     <h3 className="text-xl font-serif font-black text-foreground">Institutional <span className="text-primary italic">Status Registry</span></h3>
@@ -149,7 +153,6 @@ export default function SupervisorOversight() {
                                 className="bg-white rounded-[2.5rem] border border-border overflow-hidden group hover:shadow-2xl transition-all duration-500"
                             >
                                 <div className="p-8 lg:p-10 flex flex-col md:flex-row gap-10">
-                                    {/* Left: Info */}
                                     <div className="flex-1 space-y-6">
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-3">
@@ -173,10 +176,7 @@ export default function SupervisorOversight() {
                                             </div>
                                             <div className="space-y-1">
                                                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">Priority Events</span>
-                                                <div className={cn(
-                                                    "text-xl font-bold flex items-center gap-2",
-                                                    stats.criticalRequests > 0 ? "text-rose-600" : "text-foreground"
-                                                )}>
+                                                <div className={cn("text-xl font-bold flex items-center gap-2", stats.criticalRequests > 0 ? "text-rose-600" : "text-foreground")}>
                                                     {stats.criticalRequests}
                                                     <ShieldAlert className={cn("w-3.5 h-3.5", stats.criticalRequests > 0 ? "text-rose-600" : "text-muted-foreground/20")} />
                                                 </div>
@@ -193,15 +193,10 @@ export default function SupervisorOversight() {
                                         </div>
                                     </div>
 
-                                    {/* Right: Score Gauge */}
                                     <div className="flex flex-col items-center justify-center gap-2 px-8 py-6 bg-slate-50/50 rounded-[2rem] border border-border/50 min-w-[160px]">
                                         <div className="relative w-24 h-24 flex items-center justify-center">
                                             <svg className="w-full h-full transform -rotate-90">
-                                                <circle
-                                                    cx="48" cy="48" r="42"
-                                                    fill="none" stroke="currentColor"
-                                                    strokeWidth="8" className="text-slate-200"
-                                                />
+                                                <circle cx="48" cy="48" r="42" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-200" />
                                                 <motion.circle
                                                     cx="48" cy="48" r="42"
                                                     fill="none" stroke="currentColor"

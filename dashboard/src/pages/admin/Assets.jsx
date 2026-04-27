@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
 import { Package, Plus, Search, QrCode, Edit2, Trash2, Printer, CheckSquare, Square, X } from 'lucide-react';
@@ -26,19 +25,38 @@ export default function Assets() {
     const [filterCondition, setFilterCondition] = useState('all');
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ name: '', asset_code: '', category: 'Furniture', condition: 'Good', location: '', school_name: '', description: '' });
+    const [form, setForm] = useState({ name: '', asset_code: '', category: 'Furniture', condition: 'Good', location: '', description: '' });
     const [saving, setSaving] = useState(false);
     const [selected, setSelected] = useState(new Set());
     const [selectMode, setSelectMode] = useState(false);
 
-    useEffect(() => {
-        const assetsQuery = query(collection(db, 'assets'), orderBy('created_at', 'desc'));
-        const unsubscribe = onSnapshot(assetsQuery, (snapshot) => {
-            const assetsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setAssets(assetsList);
+    const fetchAssets = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('assets')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setAssets(data || []);
+        } catch (error) {
+            console.error('Error fetching assets:', error);
+        } finally {
             setLoading(false);
-        });
-        return () => unsubscribe();
+        }
+    };
+
+    useEffect(() => {
+        fetchAssets();
+
+        const channel = supabase
+            .channel('assets-inventory')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchAssets)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const filtered = assets.filter(a => {
@@ -48,7 +66,6 @@ export default function Assets() {
         return matchSearch && matchCat && matchCond;
     });
 
-    // ... (helper functions keep logic same)
     function toggleSelect(id) {
         setSelected(prev => {
             const next = new Set(prev);
@@ -149,13 +166,13 @@ export default function Assets() {
 
     function openCreate() {
         setEditing(null);
-        setForm({ name: '', asset_code: '', category: 'Furniture', condition: 'Good', location: '', school_name: '', description: '' });
+        setForm({ name: '', asset_code: '', category: 'Furniture', condition: 'Good', location: '', description: '' });
         setShowModal(true);
     }
 
     function openEdit(asset) {
         setEditing(asset);
-        setForm({ name: asset.name, asset_code: asset.asset_code, category: asset.category, condition: asset.condition, location: asset.location || '', school_name: asset.school_name || '', description: asset.description || '' });
+        setForm({ name: asset.name, asset_code: asset.asset_code, category: asset.category, condition: asset.condition, location: asset.location || '', description: asset.description || '' });
         setShowModal(true);
     }
 
@@ -164,19 +181,65 @@ export default function Assets() {
             sileo.error({ title: 'Validation Error', description: 'Name and Code are required.' }); 
             return; 
         }
+        
+        console.log("Assets: Starting save operation...", { isEditing: !!editing, data: form });
         setSaving(true);
-        try {
-            if (editing) {
-                await updateDoc(doc(db, 'assets', editing.id), { ...form, updated_at: serverTimestamp() });
-                sileo.success({ title: 'Asset Updated', description: `Successfully updated ${form.name}.` });
-            } else {
-                await addDoc(collection(db, 'assets'), { ...form, created_at: serverTimestamp(), updated_at: serverTimestamp() });
-                sileo.success({ title: 'Asset Created', description: `Successfully added ${form.name}.` });
+
+        // Safety timeout to prevent infinite "Saving..." state
+        const saveTimeout = setTimeout(() => {
+            if (saving) {
+                console.warn("Assets: Save operation timed out after 10s");
+                setSaving(false);
+                sileo.error({ title: 'Request Timeout', description: 'The server is taking too long to respond.' });
             }
+        }, 10000);
+
+        try {
+            let result;
+            if (editing) {
+                result = await supabase
+                    .from('assets')
+                    .update({ 
+                        name: form.name,
+                        asset_code: form.asset_code,
+                        category: form.category,
+                        condition: form.condition,
+                        location: form.location,
+                        description: form.description,
+                        updated_at: new Date().toISOString() 
+                    })
+                    .eq('id', editing.id);
+            } else {
+                result = await supabase
+                    .from('assets')
+                    .insert([{ 
+                        ...form, 
+                        created_at: new Date().toISOString(), 
+                        updated_at: new Date().toISOString() 
+                    }]);
+            }
+
+            const { error } = result;
+            
+            if (error) {
+                console.error("Supabase Save Error:", error);
+                throw error;
+            }
+
+            console.log("Assets: Save successful!");
+            sileo.success({ 
+                title: editing ? 'Asset Updated' : 'Asset Created', 
+                description: `Successfully ${editing ? 'updated' : 'added'} ${form.name}.` 
+            });
             setShowModal(false);
         } catch (error) {
-            sileo.error({ title: 'Save Failed', description: 'Could not save asset information.' });
+            console.error("Detailed Save Error:", error);
+            sileo.error({ 
+                title: 'Save Failed', 
+                description: error.message || 'Could not save asset information. Check your connection or permissions.' 
+            });
         } finally {
+            clearTimeout(saveTimeout);
             setSaving(false);
         }
     }
@@ -184,32 +247,17 @@ export default function Assets() {
     async function handleDelete(id) {
         if (!confirm('Permanently delete this asset?')) return;
         try {
-            await deleteDoc(doc(db, 'assets', id));
+            const { error } = await supabase
+                .from('assets')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
             sileo.success({ title: 'Asset Deleted', description: 'Registration has been removed.' });
         } catch (error) {
+            console.error(error);
             sileo.error({ title: 'Delete Failed', description: 'Could not remove the asset.' });
         }
     }
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1,
-                delayChildren: 0.1
-            }
-        }
-    };
-
-    const itemVariants = {
-        hidden: { y: 20, opacity: 0 },
-        visible: {
-            y: 0,
-            opacity: 1,
-            transition: { type: 'spring', stiffness: 300, damping: 24 }
-        }
-    };
 
     return (
         <div className="space-y-6 max-w-6xl mx-auto pb-12">
@@ -369,6 +417,10 @@ export default function Assets() {
                                 <Label className="text-xs font-medium text-foreground">Location</Label>
                                 <Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="e.g. Room 101" className="h-9 bg-white border-border text-sm" />
                             </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-medium text-foreground">Description</Label>
+                            <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Additional details..." className="h-9 bg-white border-border text-sm" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">

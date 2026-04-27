@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import StatusBadge from '../../components/StatusBadge';
-import { ChevronLeft, ChevronRight, CalendarDays, Wrench, AlertTriangle, Clock, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CalendarDays, Wrench, AlertTriangle, Clock, Lock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -49,22 +48,42 @@ export default function MaintenanceCalendar() {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => { 
-        if (!currentUser?.full_name) return;
+        if (!currentUser) return;
         
-        const tasksQuery = query(
-            collection(db, 'maintenance_tasks'),
-            where('assigned_to_name', '==', currentUser.full_name)
-        );
+        const fetchTasks = async () => {
+            const { data, error } = await supabase
+                .from('maintenance_tasks')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        const unsubscribe = onSnapshot(tasksQuery, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setTasks(data);
-            distribute(data);
-            setLoading(false);
-        });
+            if (!error && data) {
+                const myEmail = currentUser.email?.toLowerCase() || '';
+                const myName = currentUser.full_name?.toLowerCase() || '';
+                const myFirstName = myName.split(' ')[0] || '';
 
-        return () => unsubscribe();
-    }, [currentUser, weekStart]); // Added weekStart to ensure distribution updates when browsing weeks
+                const filtered = data.filter(t => {
+                    const assignedName = t.assigned_to_name?.toLowerCase() || '';
+                    const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
+                    return assignedEmail === myEmail || 
+                           assignedName.includes(myEmail) ||
+                           assignedName.includes(myFirstName) ||
+                           myName.includes(assignedName);
+                });
+
+                setTasks(filtered);
+                distribute(filtered);
+                setLoading(false);
+            }
+        };
+
+        fetchTasks();
+
+        const subscription = supabase.channel('maintenance_tasks_calendar')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, fetchTasks)
+            .subscribe();
+
+        return () => { supabase.removeChannel(subscription); };
+    }, [currentUser, weekStart]);
 
     const loadTasks = () => {};
 
@@ -76,7 +95,9 @@ export default function MaintenanceCalendar() {
             days[key] = [];
         }
         data.forEach(task => {
-            const dateKey = task.scheduled_start_date;
+            // Normalize the date string to yyyy-MM-dd to match the calendar grid keys
+            const dateKey = task.scheduled_start_date ? format(parseISO(task.scheduled_start_date), 'yyyy-MM-dd') : null;
+            
             if (dateKey && days[dateKey] !== undefined) {
                 days[dateKey].push(task);
             } else if (!dateKey) {
@@ -110,6 +131,13 @@ export default function MaintenanceCalendar() {
 
         const destDate = destination.droppableId === 'unscheduled' ? null : destination.droppableId;
         
+        // OPTIMISTIC UPDATE: Move the task locally first so it snaps instantly
+        const updatedTasks = tasks.map(t => 
+            t.id === taskId ? { ...t, scheduled_start_date: destDate } : t
+        );
+        setTasks(updatedTasks);
+        distribute(updatedTasks);
+
         // SLA CHECK: If moving to a date, check if it's past SLA
         if (destDate && task.sla_deadline) {
             const newDateEnd = endOfDay(parseISO(destDate));
@@ -131,7 +159,7 @@ export default function MaintenanceCalendar() {
         try {
             const updatePayload = { 
                 scheduled_start_date: destDate || null,
-                updated_at: serverTimestamp()
+                updated_at: new Date().toISOString()
             };
             
             if (reason) {
@@ -140,7 +168,8 @@ export default function MaintenanceCalendar() {
                 updatePayload.reschedule_count = (task?.reschedule_count || 0) + 1;
             }
 
-            await updateDoc(doc(db, 'maintenance_tasks', taskId), updatePayload);
+            const { error } = await supabase.from('maintenance_tasks').update(updatePayload).eq('id', taskId);
+            if (error) throw error;
             toast.success(destDate ? `Task scheduled for ${format(parseISO(destDate), 'EEE, MMM d')}` : 'Task moved to unscheduled');
         } catch (err) {
             toast.error('Failed to update task');
@@ -240,24 +269,36 @@ export default function MaintenanceCalendar() {
                                                     {(prov, snap) => {
                                                         const slaStatus = getSLAStatus(task);
                                                         const slaClasses = getSLAColorClass(slaStatus);
+                                                        const isCompleted = task.status === 'Completed';
                                                         return (
                                                             <div
                                                                 ref={prov.innerRef}
                                                                 {...prov.draggableProps}
                                                                 {...(canEdit ? prov.dragHandleProps : {})}
-                                                                className={`text-xs p-3 rounded-lg border bg-card transition-shadow ${slaClasses} ${canEdit ? 'cursor-grab active:cursor-grabbing select-none' : 'cursor-default'} ${snap.isDragging ? 'shadow-lg rotate-1 opacity-90 ring-1 ring-primary' : 'hover:shadow-sm'}`}
+                                                                className={`text-xs p-3 rounded-lg border bg-card transition-all ${isCompleted ? 'bg-emerald-50/50 border-emerald-200 opacity-60' : slaClasses} ${canEdit ? 'cursor-grab active:cursor-grabbing select-none' : 'cursor-default'} ${snap.isDragging ? 'shadow-lg rotate-1 opacity-90 ring-1 ring-primary' : 'hover:shadow-sm'}`}
                                                             >
                                                                 <div className="flex justify-between items-start mb-1">
-                                                                    <p className="font-bold truncate pr-1">{task.asset_name}</p>
+                                                                    <div className="flex items-start gap-1.5 min-w-0">
+                                                                        {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />}
+                                                                        <p className={`font-bold truncate pr-1 ${isCompleted ? 'text-emerald-900/70' : ''}`}>{task.asset_name}</p>
+                                                                    </div>
                                                                     {task.reschedule_count > 0 && <span className="flex-shrink-0 bg-white/50 px-1 rounded text-[10px] font-bold">R{task.reschedule_count}</span>}
                                                                 </div>
-                                                                <p className="opacity-70 truncate text-[10px] mb-1.5">{task.school_name}</p>
-                                                                <div className="flex items-center justify-between gap-1">
-                                                                    <StatusBadge status={task.priority || 'Medium'} size="xs" />
-                                                                    {task.sla_deadline && (
-                                                                        <div className={`flex items-center gap-0.5 text-[10px] font-medium ${slaStatus === 'overdue' ? 'text-red-700' : 'text-muted-foreground'}`}>
-                                                                            <Clock className="w-2.5 h-2.5" />
-                                                                            {format(parseISO(task.sla_deadline), 'MM/dd')}
+                                                                <p className={`opacity-70 truncate text-[10px] mb-1.5 ${isCompleted ? 'text-emerald-800/60' : ''}`}>{task.school_name}</p>
+                                                                <div className={`flex ${isCompleted ? 'flex-col gap-1' : 'items-center justify-between gap-1'}`}>
+                                                                    <div className="flex items-center justify-between w-full">
+                                                                        <StatusBadge status={isCompleted ? 'Completed' : (task.priority || 'Medium')} size="xs" />
+                                                                        {task.sla_deadline && !isCompleted && (
+                                                                            <div className={`flex items-center gap-0.5 text-[10px] font-medium ${slaStatus === 'overdue' ? 'text-red-700' : 'text-muted-foreground'}`}>
+                                                                                <Clock className="w-2.5 h-2.5" />
+                                                                                {format(parseISO(task.sla_deadline), 'MM/dd')}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    {isCompleted && (
+                                                                        <div className="flex items-center justify-between w-full pt-1 border-t border-emerald-500/10">
+                                                                            <span className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-tighter">Resolution Done</span>
+                                                                            <span className="text-[8px] font-mono text-emerald-600/40">{format(new Date(), 'HH:mm')}</span>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -279,7 +320,7 @@ export default function MaintenanceCalendar() {
                 </div>
 
                 {/* Unscheduled tasks */}
-                <div className="bg-card rounded-xl border border-border overflow-hidden">
+                <div className="bg-card rounded-xl border border-border overflow-hidden mt-6">
                     <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-muted/30">
                         <Clock className="w-4 h-4 text-muted-foreground" />
                         <h2 className="text-sm font-semibold text-foreground">Unscheduled Tasks</h2>
@@ -318,6 +359,47 @@ export default function MaintenanceCalendar() {
                     </Droppable>
                 </div>
             </DragDropContext>
+
+            {/* Completed Archive Section */}
+            <div className="bg-emerald-50/30 rounded-xl border border-emerald-200/50 overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-emerald-100 bg-emerald-50/50">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <h2 className="text-sm font-bold text-emerald-900">Completed Protocols</h2>
+                    <span className="text-[10px] font-medium text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full uppercase tracking-wider">Registry</span>
+                    <span className="ml-auto text-xs bg-white/80 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full font-bold">
+                        {tasks.filter(t => t.status === 'Completed').length} Total
+                    </span>
+                </div>
+                <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {tasks.filter(t => t.status === 'Completed').length === 0 ? (
+                            <div className="col-span-full py-8 text-center">
+                                <p className="text-sm text-emerald-600/40 italic">No protocols finalized yet ✨</p>
+                            </div>
+                        ) : (
+                            tasks.filter(t => t.status === 'Completed')
+                                .slice(0, 6) // Show last 6 completed tasks
+                                .map(task => (
+                                    <div key={task.id} className="flex items-center gap-3 p-3 bg-white border border-emerald-100 rounded-xl shadow-sm">
+                                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-bold text-emerald-900 truncate">{task.asset_name}</p>
+                                            <p className="text-[10px] text-emerald-600/70 truncate">{task.school_name}</p>
+                                        </div>
+                                        <div className="text-right flex-shrink-0">
+                                            <p className="text-[10px] font-bold text-emerald-700">DONE</p>
+                                            <p className="text-[9px] text-emerald-600/60 uppercase">
+                                                {task.scheduled_start_date ? format(parseISO(task.scheduled_start_date), 'MMM d') : 'No Date'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                        )}
+                    </div>
+                </div>
+            </div>
 
             <Dialog open={!!pendingReschedule} onOpenChange={(open) => !open && setPendingReschedule(null)}>
                 <DialogContent>

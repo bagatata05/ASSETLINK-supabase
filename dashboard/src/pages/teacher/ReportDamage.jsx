@@ -7,8 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { sileo } from 'sileo';
 import { useNavigate } from 'react-router-dom';
-import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 export default function ReportDamage() {
     const { currentUser } = useAuth();
@@ -26,12 +25,30 @@ export default function ReportDamage() {
     const fileRef = useRef(null);
 
     useEffect(() => {
-        const assetsQuery = query(collection(db, 'assets'), orderBy('name', 'asc'));
-        const unsubscribe = onSnapshot(assetsQuery, (snapshot) => {
-            const assetsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setAssets(assetsList);
-        });
-        return () => unsubscribe();
+        const fetchAssets = async () => {
+            const { data, error } = await supabase
+                .from('assets')
+                .select('*')
+                .order('name', { ascending: true });
+            
+            if (error) {
+                console.error("Error fetching assets:", error);
+                return;
+            }
+            setAssets(data || []);
+        };
+
+        fetchAssets();
+
+        // Subscribe to changes
+        const channel = supabase
+            .channel('assets-list')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchAssets)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const filteredAssets = assets.filter(a =>
@@ -56,23 +73,47 @@ export default function ReportDamage() {
         setSubmitting(true);
         try {
             const reqNum = `RR-${Date.now().toString().slice(-6)}`;
+            let publicUrl = null;
+
+            // 📸 Upload photo if exists
+            if (photo) {
+                const fileExt = photo.name.split('.').pop();
+                const fileName = `${reqNum}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = `evidence/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('repair-evidence')
+                    .upload(filePath, photo);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl: url } } = supabase.storage
+                    .from('repair-evidence')
+                    .getPublicUrl(filePath);
+                
+                publicUrl = url;
+            }
             
-            await addDoc(collection(db, 'repair_requests'), {
-                request_number: reqNum,
-                asset_id: selectedAsset.id,
-                asset_name: selectedAsset.name,
-                asset_code: selectedAsset.asset_code,
-                school_name: selectedAsset.school_name || '',
-                school_id: selectedAsset.school_id || '',
-                reported_by_email: currentUser?.email?.toLowerCase(),
-                reported_by_name: currentUser?.full_name || 'Teacher',
-                description: form.description,
-                priority: form.priority,
-                photo_url: null, 
-                status: 'Pending',
-                created_at: serverTimestamp(),
-                updated_at: serverTimestamp()
-            });
+            const { error } = await supabase
+                .from('repair_requests')
+                .insert([{
+                    request_number: reqNum,
+                    asset_id: selectedAsset.id,
+                    asset_name: selectedAsset.name,
+                    asset_code: selectedAsset.asset_code,
+                    school_name: selectedAsset.school_name || '',
+                    school_id: selectedAsset.school_id || '',
+                    reported_by_email: currentUser?.email?.toLowerCase(),
+                    reported_by_name: currentUser?.full_name || 'Teacher',
+                    description: form.description,
+                    priority: form.priority,
+                    photo_url: publicUrl, 
+                    status: 'Pending',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }]);
+
+            if (error) throw error;
 
             sileo.success({
                 title: 'Report Submitted',
@@ -82,7 +123,7 @@ export default function ReportDamage() {
         } catch (err) {
             sileo.error({
                 title: 'Submission Failed',
-                description: 'We could not record your damage report. Please try again.'
+                description: err.message || 'We could not record your damage report. Please try again.'
             });
             console.error(err);
         } finally {

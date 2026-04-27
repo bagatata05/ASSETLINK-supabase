@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatsCard from '../../components/StatsCard';
 import StatusBadge from '../../components/StatusBadge';
@@ -16,29 +15,49 @@ export default function MaintenanceDashboard() {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchTasks = async () => {
         if (!currentUser) return;
-        const tasksQuery = query(collection(db, 'maintenance_tasks'));
-        const unsubscribe = onSnapshot(tasksQuery, (snapshot) => {
-            const list = snapshot.docs.map(doc => /** @type {any} */({ ...doc.data(), id: doc.id }));
-            const sorted = list.sort((a, b) => {
-                const dateA = a.created_at?.toDate ? a.created_at.toDate() : new Date(0);
-                const dateB = b.created_at?.toDate ? b.created_at.toDate() : new Date(0);
-                return dateB - dateA;
-            });
-            setTasks(sorted);
+        try {
+            const { data, error } = await supabase
+                .from('maintenance_tasks')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setTasks(data || []);
+        } catch (error) {
+            console.error('[AssetLink] Maintenance Dashboard Error:', error);
+        } finally {
             setLoading(false);
-        }, (error) => {
-            console.error('[AssetLink] Maintenance Dashboard Listener Error:', error);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+        }
+    };
+
+    useEffect(() => {
+        fetchTasks();
+
+        const channel = supabase
+            .channel('maintenance-tasks')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, fetchTasks)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [currentUser]);
 
-    const myTasks = tasks.filter(t =>
-        t.assigned_to_email === currentUser?.email ||
-        t.assigned_to_name?.toLowerCase().includes(currentUser?.full_name?.toLowerCase() || '')
-    );
+    const myTasks = tasks.filter(t => {
+        if (!currentUser) return false;
+        const assignedName = t.assigned_to_name?.toLowerCase() || '';
+        const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
+        const myName = currentUser.full_name?.toLowerCase() || '';
+        const myEmail = currentUser.email?.toLowerCase() || '';
+        const myFirstName = myName.split(' ')[0] || '';
+
+        return assignedEmail === myEmail || 
+               assignedName.includes(myEmail) ||
+               assignedName.includes(myFirstName) ||
+               myName.includes(assignedName);
+    });
 
     const myAssigned = myTasks.filter(t => t.status === 'Assigned');
     const myInProgress = myTasks.filter(t => t.status === 'In Progress');
@@ -132,7 +151,7 @@ export default function MaintenanceDashboard() {
                                         </div>
                                         <StatusBadge status={task.status} size="sm" />
                                         <span className="label-mono text-muted-foreground/50 text-right">
-                                            {task.created_at ? format(task.created_at.toDate(), 'MMM d') : 'Recent'}
+                                            {task.created_at ? format(new Date(task.created_at), 'MMM d') : 'Recent'}
                                         </span>
                                     </div>
                                 </Link>
