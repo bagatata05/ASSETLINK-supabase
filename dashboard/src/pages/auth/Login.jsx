@@ -99,7 +99,7 @@ export default function Login() {
                             <h1 className="text-2xl font-serif font-black text-[#064e3b] tracking-tight">AssetLink</h1>
                         </div>
                         <a 
-                            href="http://localhost:3000" 
+                            href={import.meta.env.VITE_LANDING_PAGE_URL || "http://localhost:3000"} 
                             className="text-xs font-bold text-gray-400 hover:text-[#064e3b] transition-colors flex items-center gap-1.5 uppercase tracking-widest group"
                         >
                             <ChevronRight className="w-3 h-3 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
