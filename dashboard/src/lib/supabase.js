@@ -8,6 +8,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Missing Supabase environment variables');
 }
 
+/** @typedef {import('../types/supabase').Database} Database */
+
+/** @type {import('@supabase/supabase-js').SupabaseClient<Database>} */
 export const supabase = createClient(
     supabaseUrl,
     supabaseAnonKey,

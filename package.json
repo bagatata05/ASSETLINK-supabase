@@ -12,6 +12,8 @@
     "dev:landing": "npm run dev --prefix landing",
     "dev": "concurrently --kill-others -n \"DASHBOARD,LANDING\" -c \"bgCyan.bold,bgMagenta.bold\" \"npm run dev:dashboard\" \"npm run dev:landing\"",
     "install:all": "npm install && npm install --prefix dashboard && npx pnpm --dir landing install",
+    "supabase:login": "supabase login",
+    "supabase:gen": "supabase gen types typescript --project-id nqdxmhagarofkdqtwohj > dashboard/src/types/supabase.ts && copy /Y dashboard\\src\\types\\supabase.ts landing\\lib\\supabase-types.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,7 +21,8 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "supabase": "^2.95.5"
   },
   "pnpm": {
     "overrides": {

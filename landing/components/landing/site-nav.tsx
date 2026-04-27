@@ -87,10 +87,10 @@ export function SiteNav() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Button variant="ghost" size="sm" asChild>
-            <a href="https://assetlink-supabase-dashboard.vercel.app">Sign in</a>
+            <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173"}>Sign in</a>
           </Button>
           <Button size="sm" asChild>
-            <a href="https://assetlink-supabase-dashboard.vercel.app">Get started</a>
+            <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173"}>Get started</a>
           </Button>
         </div>
 
@@ -134,10 +134,10 @@ export function SiteNav() {
           ))}
           <div className="mt-2 flex gap-2">
             <Button variant="outline" size="sm" className="flex-1" asChild>
-              <a href="https://assetlink-supabase-dashboard.vercel.app">Sign in</a>
+              <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173"}>Sign in</a>
             </Button>
             <Button size="sm" className="flex-1" asChild>
-              <a href="https://assetlink-supabase-dashboard.vercel.app">Get started</a>
+              <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173"}>Get started</a>
             </Button>
           </div>
         </div>

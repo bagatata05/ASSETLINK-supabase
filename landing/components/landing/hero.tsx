@@ -105,7 +105,7 @@ export function Hero() {
 
           <StaggerItem className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button size="lg" className="group" asChild>
-              <a href="https://assetlink-supabase-dashboard.vercel.app">
+              <a href={process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:5173"}>
                 Get started
                 <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
