@@ -22,6 +22,7 @@ export default function Profile() {
         employee_id: '',
         department: '',
         room_number: '',
+        school_name: '',
         specialization: ''
     });
 
@@ -124,8 +125,17 @@ export default function Profile() {
                 {/* Profile Card */}
                 <div className="bg-card border border-border rounded-xl p-6 text-center space-y-4">
                     <div className="relative inline-block">
-                        <div className="w-20 h-20 rounded-full bg-emerald-50 text-[#064e3b] flex items-center justify-center text-2xl font-bold border border-emerald-100 mx-auto">
-                            {(currentUser.full_name?.[0] || currentUser.email?.[0] || 'U').toUpperCase()}
+                        <div className="w-20 h-20 rounded-full bg-emerald-50 text-[#064e3b] flex items-center justify-center text-2xl font-bold border border-emerald-100 mx-auto overflow-hidden">
+                            {currentUser.user_metadata?.avatar_url ? (
+                                <img 
+                                    src={currentUser.user_metadata.avatar_url} 
+                                    alt={currentUser.full_name} 
+                                    className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                (currentUser.full_name?.[0] || currentUser.email?.[0] || 'U').toUpperCase()
+                            )}
                         </div>
                         <button className="absolute bottom-0 right-0 p-1.5 bg-[#064e3b] text-white rounded-full shadow-lg border-2 border-white">
                             <Camera className="w-3 h-3" />

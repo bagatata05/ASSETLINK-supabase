@@ -123,8 +123,17 @@ export default function Layout() {
                 {/* User */}
                 <div className="p-3 border-t border-sidebar-border flex-shrink-0">
                     <div className="flex items-center gap-2.5 p-2 rounded-md hover:bg-sidebar-accent transition-colors group">
-                        <div className="w-7 h-7 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-white border border-white/10">
-                            {(currentUser?.full_name?.[0] || currentUser?.email?.[0] || 'U').toUpperCase()}
+                        <div className="w-7 h-7 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-white border border-white/10 overflow-hidden">
+                            {currentUser?.user_metadata?.avatar_url ? (
+                                <img 
+                                    src={currentUser.user_metadata.avatar_url} 
+                                    alt={currentUser.full_name} 
+                                    className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                (currentUser?.full_name?.[0] || currentUser?.email?.[0] || 'U').toUpperCase()
+                            )}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-[13px] font-medium text-sidebar-accent-foreground truncate leading-tight">

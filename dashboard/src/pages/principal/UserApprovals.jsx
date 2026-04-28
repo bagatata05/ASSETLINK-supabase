@@ -131,8 +131,17 @@ export default function UserApprovals() {
                                     <TableRow key={user.id} className="data-row border-border group transition-colors">
                                         <TableCell className="py-3 pl-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] border border-primary/20">
-                                                    {user.full_name?.[0]?.toUpperCase() || 'U'}
+                                                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] border border-primary/20 overflow-hidden">
+                                                    {user.avatar_url ? (
+                                                        <img 
+                                                            src={user.avatar_url} 
+                                                            alt={user.full_name} 
+                                                            className="w-full h-full object-cover"
+                                                            referrerPolicy="no-referrer"
+                                                        />
+                                                    ) : (
+                                                        user.full_name?.[0]?.toUpperCase() || 'U'
+                                                    )}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium text-foreground truncate">{user.full_name}</p>

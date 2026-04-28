@@ -26,17 +26,27 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
+
+            // 🔥 Check status immediately
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('status')
+                .eq('id', data.user.id)
+                .single();
+
+            if (profile?.status === 'rejected') {
+                await supabase.auth.signOut();
+                throw new Error('Your account access has been revoked by the administrator.');
+            }
 
             sileo.success({ title: 'Welcome back', description: 'Authentication successful.' });
             
-            // Wait for profile refresh if available
             if (typeof refreshProfile === 'function') {
                 await refreshProfile();
             }
             
-            // Navigate to root as specified in AuthenticatedApp.jsx
             navigate('/');
         } catch (error) {
             sileo.error({ title: 'Login Failed', description: error.message });
