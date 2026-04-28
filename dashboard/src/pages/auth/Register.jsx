@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
     QrCode, Eye, EyeOff, CheckCircle2, ChevronRight, 
-    UserCircle, School, Wrench, Camera, Shield, Mail, Lock
+    UserCircle, School, Wrench, Camera, Shield, Mail, Lock, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sileo } from "sileo";
@@ -62,7 +62,13 @@ export default function Register() {
                     updated_at: new Date().toISOString()
                 }]);
 
-            if (profileError) throw profileError;
+            if (profileError) {
+                // 🔥 Handle Duplicate Employee ID (Postgres Error 23505)
+                if (profileError.code === '23505') {
+                    throw new Error('This Employee ID is already registered. Please use your own ID or contact the admin.');
+                }
+                throw profileError;
+            }
 
             sileo.success({
                 title: 'Account Created',
@@ -173,12 +179,27 @@ export default function Register() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Department</Label>
-                                            <Input 
-                                                placeholder="Dept." 
-                                                className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium"
-                                                value={formData.department}
-                                                onChange={e => setFormData({...formData, department: e.target.value})}
-                                            />
+                                            <div className="relative group">
+                                                <select 
+                                                    className="flex h-12 w-full border border-gray-200 bg-white px-4 py-2 text-base font-medium focus:ring-2 focus:ring-[#064e3b] focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-gray-300 shadow-sm"
+                                                    value={formData.department}
+                                                    onChange={e => setFormData({...formData, department: e.target.value})}
+                                                    required
+                                                >
+                                                    <option value="" disabled>Select Dept.</option>
+                                                    <option value="English">English</option>
+                                                    <option value="Mathematics">Mathematics</option>
+                                                    <option value="Science">Science</option>
+                                                    <option value="Filipino">Filipino</option>
+                                                    <option value="Araling Panlipunan">Araling Panlipunan</option>
+                                                    <option value="MAPEH">MAPEH (P.E.)</option>
+                                                    <option value="TLE">TLE</option>
+                                                    <option value="ESP">ESP</option>
+                                                    <option value="Kindergarten">Kindergarten</option>
+                                                    <option value="SPED">SPED</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-[#064e3b] transition-colors" />
+                                            </div>
                                         </div>
                                     </div>
 
