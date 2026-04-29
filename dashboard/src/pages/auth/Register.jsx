@@ -167,40 +167,44 @@ export default function Register() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className={`grid ${formData.role === 'teacher' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Employee ID</Label>
                                             <Input 
                                                 placeholder="ID Number" 
-                                                className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium"
+                                                className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium shadow-sm"
                                                 value={formData.employeeId}
                                                 onChange={e => setFormData({...formData, employeeId: e.target.value})}
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Department</Label>
-                                            <div className="relative group">
-                                                <select 
-                                                    className="flex h-12 w-full border border-gray-200 bg-white px-4 py-2 text-base font-medium focus:ring-2 focus:ring-[#064e3b] focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-gray-300 shadow-sm"
-                                                    value={formData.department}
-                                                    onChange={e => setFormData({...formData, department: e.target.value})}
-                                                    required
-                                                >
-                                                    <option value="" disabled>Select Dept.</option>
-                                                    <option value="English">English</option>
-                                                    <option value="Mathematics">Mathematics</option>
-                                                    <option value="Science">Science</option>
-                                                    <option value="Filipino">Filipino</option>
-                                                    <option value="Araling Panlipunan">Araling Panlipunan</option>
-                                                    <option value="MAPEH">MAPEH (P.E.)</option>
-                                                    <option value="TLE">TLE</option>
-                                                    <option value="ESP">ESP</option>
-                                                    <option value="Kindergarten">Kindergarten</option>
-                                                    <option value="SPED">SPED</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-[#064e3b] transition-colors" />
+                                        
+                                        {formData.role === 'teacher' && (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                                                <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Department</Label>
+                                                <div className="relative group">
+                                                    <select 
+                                                        className="flex h-12 w-full border border-gray-200 bg-white px-4 py-2 text-base font-medium focus:ring-2 focus:ring-[#064e3b] focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-gray-300 shadow-sm"
+                                                        value={formData.department}
+                                                        onChange={e => setFormData({...formData, department: e.target.value})}
+                                                        required
+                                                    >
+                                                        <option value="" disabled>Select Dept.</option>
+                                                        <option value="English">English</option>
+                                                        <option value="Mathematics">Mathematics</option>
+                                                        <option value="Science">Science</option>
+                                                        <option value="Filipino">Filipino</option>
+                                                        <option value="Araling Panlipunan">Araling Panlipunan</option>
+                                                        <option value="MAPEH">MAPEH (P.E.)</option>
+                                                        <option value="TLE">TLE</option>
+                                                        <option value="ESP">ESP</option>
+                                                        <option value="Kindergarten">Kindergarten</option>
+                                                        <option value="SPED">SPED</option>
+                                                        <option value="Administrative">Administrative Office</option>
+                                                    </select>
+                                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-[#064e3b] transition-colors" />
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
 
                                     <Button 
