@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { 
     ShieldCheck, UserCheck, UserX, Search, Filter, 
-    MoreVertical, Mail, Calendar, Hash, BadgeCheck, Clock
+    MoreVertical, Mail, Calendar, Hash, BadgeCheck, Clock, Phone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,7 +145,18 @@ export default function UserApprovals() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium text-foreground truncate">{user.full_name}</p>
-                                                    <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                                                            <Mail className="w-2.5 h-2.5 opacity-60" />
+                                                            {user.email}
+                                                        </p>
+                                                        {user.phone_number && (
+                                                            <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                                                                <Phone className="w-2.5 h-2.5 opacity-60" />
+                                                                {user.phone_number}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </TableCell>
