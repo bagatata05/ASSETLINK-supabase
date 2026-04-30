@@ -15,6 +15,7 @@ export default function Register() {
     const [currentStep, setCurrentStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const navigate = useNavigate();
     
     const [formData, setFormData] = useState({
@@ -74,10 +75,10 @@ export default function Register() {
 
             sileo.success({
                 title: 'Account Created',
-                description: 'Registration successful. You can now log in.'
+                description: 'Registration successful. Awaiting administrator approval.'
             });
 
-            navigate('/login');
+            setIsSuccess(true);
         } catch (error) {
             sileo.error({
                 title: 'Registration Failed',
@@ -87,6 +88,65 @@ export default function Register() {
             setIsLoading(false);
         }
     };
+
+    if (isSuccess) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center bg-white p-8 font-sans overflow-hidden relative">
+                {/* Background Decorations */}
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[100px] -z-10" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-[100px] -z-10" />
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-md text-center space-y-8 relative z-10"
+                >
+                    <div className="relative inline-block">
+                        <div className="w-24 h-24 bg-[#064e3b] rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-200 transform -rotate-6 mx-auto">
+                            <CheckCircle2 className="w-12 h-12 text-white" />
+                        </div>
+                        <motion.div 
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 2 }}
+                            className="absolute -top-2 -right-2 w-8 h-8 bg-emerald-400 rounded-full border-4 border-white flex items-center justify-center"
+                        >
+                            <Shield className="w-4 h-4 text-[#064e3b]" />
+                        </motion.div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight">
+                            Registration <span className="text-[#064e3b] italic underline decoration-emerald-200">Sent.</span>
+                        </h2>
+                        <p className="text-gray-500 font-medium text-lg leading-relaxed">
+                            Your account is now <span className="text-[#064e3b] font-bold">Awaiting Admin Approval</span>. 
+                            Please wait for the principal to verify your credentials.
+                        </p>
+                    </div>
+
+                    <div className="p-6 bg-emerald-50/50 rounded-2xl border border-emerald-100 flex items-start gap-4 text-left">
+                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
+                            <Mail className="w-5 h-5 text-[#064e3b]" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-[#064e3b] uppercase tracking-widest mb-1">Next Steps</p>
+                            <p className="text-sm text-[#064e3b]/80 font-medium">
+                                We'll notify you via email once your account is activated. This usually takes less than 24 hours.
+                            </p>
+                        </div>
+                    </div>
+
+                    <Button 
+                        onClick={() => navigate('/login')}
+                        variant="outline"
+                        className="h-12 px-8 border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all gap-2"
+                    >
+                        Back to Login
+                    </Button>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen grid lg:grid-cols-2 font-sans bg-white overflow-hidden">
