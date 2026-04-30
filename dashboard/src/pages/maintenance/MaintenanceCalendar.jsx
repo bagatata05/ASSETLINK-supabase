@@ -35,8 +35,11 @@ const WORKLOAD_LABEL = (count) => {
 
 export default function MaintenanceCalendar() {
     const { currentUser } = useAuth();
+    const [isAdminEditing, setIsAdminEditing] = useState(false); // 🔒 Safety lock for Admins
     const role = currentUser?.role || 'teacher';
-    const canEdit = role === 'maintenance' || role === 'admin' || role === 'principal';
+    const isMaintenance = role === 'maintenance';
+    const isAdmin = role === 'admin' || role === 'principal';
+    const canEdit = isMaintenance || (isAdmin && isAdminEditing);
     
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -195,8 +198,48 @@ export default function MaintenanceCalendar() {
 
     return (
         <div className="space-y-6">
-            {/* Read-only banner for teachers/others */}
-            {!canEdit && (
+            {/* Role-based Banners */}
+            {isAdmin && !isAdminEditing && (
+                <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 shadow-sm">
+                    <div className="flex items-center gap-3">
+                        <Lock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                        <span className="text-sm text-amber-800">
+                            <strong>Safety Lock Active</strong> — You are currently in view-only mode to prevent accidental changes.
+                        </span>
+                    </div>
+                    <Button 
+                        onClick={() => setIsAdminEditing(true)}
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 border-amber-300 text-amber-700 hover:bg-amber-100 font-bold gap-1.5"
+                    >
+                        <Wrench className="w-3.5 h-3.5" />
+                        Unlock Editing
+                    </Button>
+                </div>
+            )}
+
+            {isAdmin && isAdminEditing && (
+                <div className="flex items-center justify-between gap-3 bg-[#064e3b] border border-emerald-800 rounded-xl px-4 py-3 shadow-sm text-white">
+                    <div className="flex items-center gap-3">
+                        <Wrench className="w-4 h-4 text-emerald-300 flex-shrink-0 animate-pulse" />
+                        <span className="text-sm font-medium">
+                            <strong>Admin Overwrite Mode</strong> — Drag-and-drop editing is now active. Changes will sync to the database.
+                        </span>
+                    </div>
+                    <Button 
+                        onClick={() => setIsAdminEditing(false)}
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 border-emerald-400 bg-emerald-900/50 text-white hover:bg-emerald-900 font-bold gap-1.5"
+                    >
+                        <Lock className="w-3.5 h-3.5" />
+                        Lock Session
+                    </Button>
+                </div>
+            )}
+
+            {!isMaintenance && !isAdmin && (
                 <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
                     <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
                     <span className="text-sm text-blue-700"><strong>View Only</strong> — Only Maintenance staff and Administration can reschedule tasks.</span>
