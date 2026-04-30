@@ -1,40 +1,58 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { UserCircle, Wrench, ChevronRight, QrCode, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    UserCircle, Wrench, ChevronRight, QrCode, 
+    CheckCircle2, Mail, Phone, Hash, ChevronDown, ArrowLeft
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { sileo } from 'sileo';
 
 export default function RoleSelection() {
     const { currentUser, refreshProfile } = useAuth();
+    const [currentStep, setCurrentStep] = useState(1);
     const [selectedRole, setSelectedRole] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [imageSrc, setImageSrc] = useState('https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=1200');
+    
+    const [details, setDetails] = useState({
+        employeeId: '',
+        department: '',
+        specialization: '',
+        phone: ''
+    });
 
     const roles = [
         { 
             id: 'teacher', 
             label: 'Teacher', 
             desc: 'Report damages and track school assets.', 
-            icon: UserCircle,
-            previewImg: 'https://images.unsplash.com/photo-1544717297-fa154daaf762?auto=format&fit=crop&q=80&w=1200'
+            icon: UserCircle
         },
         { 
             id: 'maintenance', 
             label: 'Maintenance', 
             desc: 'Receive tasks and resolve repair requests.', 
-            icon: Wrench,
-            previewImg: 'https://images.unsplash.com/photo-1581092921461-7d15ca55a40a?auto=format&fit=crop&q=80&w=1200'
+            icon: Wrench
         }
     ];
 
-    const handleConfirm = async () => {
+    const handleNextStep = () => {
         if (!selectedRole) return;
+        setCurrentStep(2);
+    };
+
+    const handleBackStep = () => {
+        setCurrentStep(1);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setIsLoading(true);
 
         try {
-            // 🔥 Get full name from Google metadata if available
             const meta = currentUser.user_metadata || {};
             const fullName = meta.full_name || meta.name || 
                            (meta.given_name ? `${meta.given_name} ${meta.family_name || ''}`.trim() : 'Google User');
@@ -46,18 +64,28 @@ export default function RoleSelection() {
                     role: selectedRole,
                     email: currentUser.email,
                     full_name: fullName,
+                    employee_id: details.employeeId,
+                    department: selectedRole === 'teacher' ? details.department : null,
+                    specialization: selectedRole === 'maintenance' ? details.specialization : null,
+                    phone_number: details.phone,
                     status: 'pending', // 🔒 Wait for admin approval
                     updated_at: new Date().toISOString()
                 });
 
-            if (error) throw error;
-            sileo.success({ title: 'Profile Updated', description: 'Your workspace is being prepared.' });
+            if (error) {
+                if (error.code === '23505') {
+                    throw new Error('This Employee ID is already registered. Please use your own ID or contact the admin.');
+                }
+                throw error;
+            }
+
+            sileo.success({ title: 'Profile Updated', description: 'Your request has been sent for admin approval.' });
             if (refreshProfile) await refreshProfile();
         } catch (error) {
             console.error('RoleSelection error:', error);
             sileo.error({ 
-                title: 'Selection Failed', 
-                description: error.message || 'We could not save your preference. Please try again.' 
+                title: 'Submission Failed', 
+                description: error.message || 'Could not save your details.' 
             });
         } finally {
             setIsLoading(false);
@@ -65,9 +93,9 @@ export default function RoleSelection() {
     };
 
     return (
-        <div className="h-screen grid lg:grid-cols-2 bg-white selection:bg-emerald-100">
-            {/* Left Side: Role Choice */}
-            <div className="flex flex-col items-center justify-center px-8 py-6 lg:px-20 animate-fade-in relative">
+        <div className="h-screen grid lg:grid-cols-2 bg-white selection:bg-emerald-100 overflow-hidden">
+            {/* Left Side: Multi-Step Form */}
+            <div className="flex flex-col items-center justify-center px-8 py-6 lg:px-20 animate-fade-in relative overflow-y-auto">
                 <div className="w-full max-w-[480px] space-y-8">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
@@ -77,56 +105,176 @@ export default function RoleSelection() {
                         <h1 className="text-2xl font-serif font-black text-[#064e3b] tracking-tight">AssetLink</h1>
                     </div>
 
-                    <div className="space-y-3">
-                        <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight leading-tight">
-                            Choose your <span className="text-[#064e3b] italic underline decoration-emerald-200">workspace.</span>
-                        </h2>
-                        <p className="text-gray-500 font-medium text-lg">
-                            Select your primary role to configure your permissions and dashboard.
-                        </p>
+                    {/* Progress Indicator */}
+                    <div className="flex gap-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div 
+                            className="h-full bg-[#064e3b] rounded-full"
+                            initial={{ width: "50%" }}
+                            animate={{ width: currentStep === 1 ? "50%" : "100%" }}
+                            transition={{ duration: 0.5, ease: "circOut" }}
+                        />
                     </div>
 
-                    <div className="grid gap-4">
-                        {roles.map((role) => (
-                            <button
-                                key={role.id}
-                                onClick={() => {
-                                    setSelectedRole(role.id);
-                                    setImageSrc(role.previewImg);
-                                }}
-                                className={`group flex items-center p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
-                                    selectedRole === role.id 
-                                    ? 'border-[#064e3b] bg-emerald-50/30 ring-4 ring-emerald-500/5' 
-                                    : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-gray-50/50'
-                                }`}
+                    <AnimatePresence mode="wait">
+                        {currentStep === 1 ? (
+                            <motion.div 
+                                key="step1"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 20 }}
+                                className="space-y-8"
                             >
-                                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-5 transition-all ${
-                                    selectedRole === role.id ? 'bg-[#064e3b] text-white shadow-lg' : 'bg-gray-50 text-gray-400'
-                                }`}>
-                                    <role.icon className="w-8 h-8" />
+                                <div className="space-y-3">
+                                    <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight leading-tight">
+                                        Choose your <span className="text-[#064e3b] italic underline decoration-emerald-200">role.</span>
+                                    </h2>
+                                    <p className="text-gray-500 font-medium text-lg">
+                                        Select your primary role to configure your permissions and dashboard.
+                                    </p>
                                 </div>
-                                <div className="flex-1">
-                                    <p className={`text-lg font-bold ${selectedRole === role.id ? 'text-[#064e3b]' : 'text-gray-900'}`}>{role.label}</p>
-                                    <p className="text-sm text-gray-500 font-medium">{role.desc}</p>
+
+                                <div className="grid gap-4">
+                                    {roles.map((role) => (
+                                        <button
+                                            key={role.id}
+                                            onClick={() => setSelectedRole(role.id)}
+                                            className={`group flex items-center p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
+                                                selectedRole === role.id 
+                                                ? 'border-[#064e3b] bg-emerald-50/30 ring-4 ring-emerald-500/5' 
+                                                : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-gray-50/50'
+                                            }`}
+                                        >
+                                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-5 transition-all ${
+                                                selectedRole === role.id ? 'bg-[#064e3b] text-white shadow-lg' : 'bg-gray-50 text-gray-400'
+                                            }`}>
+                                                <role.icon className="w-8 h-8" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={`text-lg font-bold ${selectedRole === role.id ? 'text-[#064e3b]' : 'text-gray-900'}`}>{role.label}</p>
+                                                <p className="text-sm text-gray-500 font-medium">{role.desc}</p>
+                                            </div>
+                                            {selectedRole === role.id && (
+                                                <div className="w-6 h-6 bg-[#064e3b] text-white rounded-full flex items-center justify-center shadow-md">
+                                                    <CheckCircle2 size={14} />
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
                                 </div>
-                                {selectedRole === role.id && (
-                                    <div className="w-6 h-6 bg-[#064e3b] text-white rounded-full flex items-center justify-center shadow-md">
-                                        <CheckCircle2 size={14} />
+
+                                <Button 
+                                    onClick={handleNextStep}
+                                    disabled={!selectedRole}
+                                    className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98]"
+                                >
+                                    Next Step <ChevronRight className="w-5 h-5" />
+                                </Button>
+                            </motion.div>
+                        ) : (
+                            <motion.form 
+                                key="step2"
+                                onSubmit={handleSubmit}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-6"
+                            >
+                                <div className="space-y-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={handleBackStep}
+                                        className="flex items-center gap-2 text-sm font-bold text-[#064e3b] hover:opacity-70 transition-opacity uppercase tracking-widest"
+                                    >
+                                        <ArrowLeft size={14} /> Back to roles
+                                    </button>
+                                    <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight leading-tight">
+                                        Professional <span className="text-[#064e3b] italic underline decoration-emerald-200">Details.</span>
+                                    </h2>
+                                    <p className="text-gray-500 font-medium">Please provide your school credentials to continue.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Employee ID</Label>
+                                        <div className="relative">
+                                            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Input 
+                                                placeholder="Enter your ID Number" 
+                                                className="h-12 border-gray-200 rounded-xl pl-11 focus:ring-[#064e3b] font-medium shadow-sm"
+                                                value={details.employeeId}
+                                                onChange={e => setDetails({...details, employeeId: e.target.value})}
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
 
-                    <Button 
-                        onClick={handleConfirm}
-                        disabled={!selectedRole || isLoading}
-                        className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98] disabled:opacity-50"
-                    >
-                        {isLoading ? 'Preparing Workspace...' : 'Initialize Dashboard'} <ChevronRight className="w-5 h-5" />
-                    </Button>
+                                    {selectedRole === 'teacher' ? (
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Department</Label>
+                                            <div className="relative group">
+                                                <select 
+                                                    className="flex h-12 w-full border border-gray-200 bg-white px-4 py-2 text-base font-medium focus:ring-2 focus:ring-[#064e3b] focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-gray-300 shadow-sm"
+                                                    value={details.department}
+                                                    onChange={e => setDetails({...details, department: e.target.value})}
+                                                    required
+                                                >
+                                                    <option value="" disabled>Select Dept.</option>
+                                                    <option value="English">English</option>
+                                                    <option value="Mathematics">Mathematics</option>
+                                                    <option value="Science">Science</option>
+                                                    <option value="Filipino">Filipino</option>
+                                                    <option value="Araling Panlipunan">Araling Panlipunan</option>
+                                                    <option value="MAPEH">MAPEH (P.E.)</option>
+                                                    <option value="TLE">TLE</option>
+                                                    <option value="ESP">ESP</option>
+                                                    <option value="Kindergarten">Kindergarten</option>
+                                                    <option value="SPED">SPED</option>
+                                                    <option value="Administrative">Administrative Office</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-[#064e3b] transition-colors" />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Specialization</Label>
+                                            <Input 
+                                                placeholder="e.g. Electrical, Plumbing, IT" 
+                                                className="h-12 border-gray-200 rounded-xl px-4 focus:ring-[#064e3b] font-medium shadow-sm"
+                                                value={details.specialization}
+                                                onChange={e => setDetails({...details, specialization: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                    )}
 
-                    <div className="pt-4 text-center">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Phone Number</Label>
+                                        <div className="relative">
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Input 
+                                                type="tel"
+                                                placeholder="09XX XXX XXXX" 
+                                                className="h-12 border-gray-200 rounded-xl pl-11 focus:ring-[#064e3b] font-medium shadow-sm"
+                                                value={details.phone}
+                                                onChange={e => setDetails({...details, phone: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Button 
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98]"
+                                >
+                                    {isLoading ? 'Saving Details...' : 'Initialize Dashboard'} <ChevronRight className="w-5 h-5" />
+                                </Button>
+                            </motion.form>
+                        )}
+                    </AnimatePresence>
+
+                    <div className="pt-4 text-center border-t border-gray-100">
                         <button 
                             onClick={() => {
                                 supabase.auth.signOut();
@@ -140,15 +288,13 @@ export default function RoleSelection() {
                 </div>
             </div>
 
-            {/* Right Side: Typography Brand Panel */}
+            {/* Right Side: Brand Panel */}
             <div className="hidden lg:flex flex-col items-center justify-center bg-[#064e3b] p-12 text-white relative overflow-hidden">
-                {/* Dynamic Background Elements */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#064e3b] via-[#053e2f] to-[#042f24]" />
                 <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')]" />
                 <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-emerald-400/10 rounded-full blur-[120px]" />
                 
                 <div className="w-full max-w-[540px] space-y-12 relative z-10 text-left">
-                    {/* Simplified Typography Composition */}
                     <div className="space-y-8">
                         <motion.div 
                             initial={{ opacity: 0, x: -20 }}
@@ -177,22 +323,10 @@ export default function RoleSelection() {
                             <p className="text-emerald-50/70 text-xl leading-relaxed font-medium max-w-[440px]">
                                 Tell us who you are so we can show you the right tools. Are you a Teacher reporting issues or Maintenance fixing them?
                             </p>
-                            
-                            <div className="grid grid-cols-2 gap-8 pt-4">
-                                <div className="space-y-2">
-                                    <p className="text-emerald-400 font-serif italic text-2xl">Custom.</p>
-                                    <p className="text-emerald-50/40 text-[10px] font-black uppercase tracking-widest leading-relaxed">Tools built <br/>just for you</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <p className="text-emerald-400 font-serif italic text-2xl">Simple.</p>
-                                    <p className="text-emerald-50/40 text-[10px] font-black uppercase tracking-widest leading-relaxed">Focus on <br/>your daily work</p>
-                                </div>
-                            </div>
                         </motion.div>
                     </div>
                 </div>
 
-                {/* Subtle Brand Watermark */}
                 <div className="absolute top-12 right-12 opacity-[0.03] pointer-events-none -rotate-12 scale-150">
                     <QrCode size={300} strokeWidth={0.2} />
                 </div>
