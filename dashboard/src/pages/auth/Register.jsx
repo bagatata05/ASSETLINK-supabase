@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
     QrCode, Eye, EyeOff, CheckCircle2, ChevronRight, 
-    UserCircle, School, Wrench, Camera, Shield, Mail, Lock, ChevronDown
+    UserCircle, School, Wrench, Camera, Shield, Mail, Lock, ChevronDown, Phone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sileo } from "sileo";
@@ -24,7 +24,8 @@ export default function Register() {
         password: '',
         role: 'teacher',
         employeeId: '',
-        department: ''
+        department: '',
+        phone: ''
     });
 
     const handleNext = () => setCurrentStep(2);
@@ -58,6 +59,7 @@ export default function Register() {
                     role: formData.role,
                     employee_id: formData.employeeId,
                     department: formData.department,
+                    phone_number: formData.phone,
                     status: 'pending', // 🔒 Admin approval required
                     updated_at: new Date().toISOString()
                 }]);
@@ -257,6 +259,21 @@ export default function Register() {
                                                 className="h-12 border-gray-200 rounded-xl pl-11 pr-4 focus-visible:ring-[#064e3b] font-medium"
                                                 value={formData.email}
                                                 onChange={e => setFormData({...formData, email: e.target.value})}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Phone Number</Label>
+                                        <div className="relative">
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Input 
+                                                type="tel"
+                                                placeholder="09XX XXX XXXX" 
+                                                className="h-12 border-gray-200 rounded-xl pl-11 focus-visible:ring-[#064e3b] font-medium"
+                                                value={formData.phone}
+                                                onChange={e => setFormData({...formData, phone: e.target.value})}
                                                 required
                                             />
                                         </div>
