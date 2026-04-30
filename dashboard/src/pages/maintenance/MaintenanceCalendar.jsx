@@ -36,7 +36,7 @@ const WORKLOAD_LABEL = (count) => {
 export default function MaintenanceCalendar() {
     const { currentUser } = useAuth();
     const role = currentUser?.role || 'teacher';
-    const canEdit = role === 'maintenance';
+    const canEdit = role === 'maintenance' || role === 'admin' || role === 'principal';
     
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -61,14 +61,18 @@ export default function MaintenanceCalendar() {
                 const myName = currentUser.full_name?.toLowerCase() || '';
                 const myFirstName = myName.split(' ')[0] || '';
 
-                const filtered = data.filter(t => {
-                    const assignedName = t.assigned_to_name?.toLowerCase() || '';
-                    const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
-                    return assignedEmail === myEmail || 
-                           assignedName.includes(myEmail) ||
-                           assignedName.includes(myFirstName) ||
-                           myName.includes(assignedName);
-                });
+                // 🏛️ ADMIN/PRINCIPAL can see EVERYTHING
+                // 🛠️ MAINTENANCE only see their assigned tasks
+                const filtered = (role === 'admin' || role === 'principal') 
+                    ? data 
+                    : data.filter(t => {
+                        const assignedName = t.assigned_to_name?.toLowerCase() || '';
+                        const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
+                        return assignedEmail === myEmail || 
+                               assignedName.includes(myEmail) ||
+                               assignedName.includes(myFirstName) ||
+                               myName.includes(assignedName);
+                    });
 
                 setTasks(filtered);
                 distribute(filtered);
@@ -191,11 +195,11 @@ export default function MaintenanceCalendar() {
 
     return (
         <div className="space-y-6">
-            {/* Read-only banner for non-maintenance users */}
+            {/* Read-only banner for teachers/others */}
             {!canEdit && (
                 <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
                     <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                    <span className="text-sm text-blue-700"><strong>View Only</strong> — Only Maintenance staff can reschedule tasks. You can view the calendar and see updates made by maintenance.</span>
+                    <span className="text-sm text-blue-700"><strong>View Only</strong> — Only Maintenance staff and Administration can reschedule tasks.</span>
                 </div>
             )}
 
