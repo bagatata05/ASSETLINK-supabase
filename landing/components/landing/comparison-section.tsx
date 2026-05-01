@@ -44,16 +44,6 @@ const ROWS: Row[] = [
   },
 
   {
-    label: "Offline-first capture",
-    detail: "Tickets queue on-device and sync when connectivity returns",
-    values: ["yes", "no", "yes"],
-  },
-  {
-    label: "Philippine context",
-    detail: "Built around public school, barangay, and LGU escalation paths",
-    values: ["partial", "no", "yes"],
-  },
-  {
     label: "Typical setup cost",
     detail: "Per school",
     values: ["Forms + filing", "Per-seat SaaS", "Printable tags + web"],
