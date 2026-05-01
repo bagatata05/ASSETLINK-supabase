@@ -95,11 +95,33 @@ export default function Assets() {
         const cards = selectedAssets.map(asset => {
             const qrUrl = getQrUrl(asset.id);
             return `
-                <div class="qr-card">
-                    <img src="${qrUrl}" alt="${asset.name}" crossorigin="anonymous" />
-                    <p class="name">${asset.name}</p>
-                    <p class="code">ID: ${asset.asset_code}</p>
-                    ${asset.location ? `<p class="loc">${asset.location}</p>` : ''}
+                <div class="asset-tag">
+                    <div class="tag-header">
+                        <svg class="tag-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="9" height="9" x="3" y="3" rx="2"/><path d="M7 14h.01"/><path d="M7 18h.01"/><path d="M11 14h.01"/><path d="M11 18h.01"/><path d="M15 14h.01"/><path d="M15 18h.01"/></svg>
+                        <span>AssetLink Verified</span>
+                    </div>
+                    <div class="tag-body">
+                        <div class="qr-container">
+                            <img src="${qrUrl}" alt="${asset.name}" crossorigin="anonymous" />
+                        </div>
+                        <div class="asset-info">
+                            <h2 class="asset-name">${asset.name}</h2>
+                            <div class="asset-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">ID NUMBER</span>
+                                    <span class="meta-value font-mono">${asset.asset_code}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">LOCATION</span>
+                                    <span class="meta-value">${asset.location || 'Unassigned'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tag-footer">
+                        <span>Official Inventory Control</span>
+                        <span>Guiwan Elementary School</span>
+                    </div>
                 </div>`;
         }).join('');
 
@@ -107,55 +129,177 @@ export default function Assets() {
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Asset QR Codes - AssetLink</title>
+    <title>Asset Labels - AssetLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Geist:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #003333;
+            --primary-light: #004d4d;
+            --accent: #f59e0b;
+            --background: #f8fafc;
+            --border: #e2e8f0;
+            --text: #001a1a;
+            --text-muted: #64748b;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: system-ui, sans-serif; background: #f8fafc; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--background); 
+            color: var(--text);
+            padding: 40px;
+        }
+        
+        /* Toolbar */
         .toolbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: #fff; border-bottom: 2px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 32px;
+            padding: 12px 40px;
         }
-        .toolbar h1 { font-size: 18px; font-weight: 900; color: #008080; letter-spacing: -0.5px; }
-        .toolbar p { font-size: 12px; color: #64748b; margin-top: 2px; }
-        .btn-download {
-            background: #008080; color: #fff; border: none;
-            padding: 10px 24px; border-radius: 12px;
-            font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
+        .toolbar h1 { 
+            font-family: 'Geist', sans-serif;
+            font-size: 16px; font-weight: 800; color: var(--primary); 
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toolbar .count { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+        .btn-print {
+            background: var(--primary); color: #fff; border: none;
+            padding: 8px 20px; border-radius: 8px;
+            font-size: 13px; font-weight: 600;
             cursor: pointer; display: flex; align-items: center; gap: 8px;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
         }
-        .btn-download:hover { background: #006666; }
-        .sheet { padding: 100px 32px 48px; max-width: 900px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        .qr-card {
-            border: 2px dashed #008080; border-radius: 16px;
-            padding: 20px; text-align: center; background: #fff;
+        .btn-print:hover { background: var(--primary-light); transform: translateY(-1px); }
+
+        /* Print Grid */
+        .sheet { max-width: 1000px; margin: 60px auto 0; }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
         }
-        .qr-card img { width: 140px; height: 140px; margin: 0 auto 12px; display: block; }
-        .name { font-size: 13px; font-weight: 900; color: #008080; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .code { font-size: 11px; font-weight: 700; color: #64748b; }
-        .loc { font-size: 10px; color: #94a3b8; margin-top: 2px; }
-        @media print { .toolbar { display: none; } .sheet { padding-top: 0; } }
+
+        /* Asset Tag Design */
+        .asset-tag {
+            background: white;
+            border: 1.5px solid var(--primary);
+            border-radius: 12px;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            page-break-inside: avoid;
+        }
+        .tag-header {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Geist', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .tag-logo { width: 14px; height: 14px; color: var(--accent); }
+        
+        .tag-body {
+            display: flex;
+            padding: 16px;
+            gap: 16px;
+            align-items: center;
+            flex: 1;
+        }
+        .qr-container {
+            width: 100px;
+            height: 100px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-container img { width: 100%; height: 100%; }
+
+        .asset-info { flex: 1; min-width: 0; }
+        .asset-name {
+            font-family: 'Geist', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 12px;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .asset-meta { display: grid; gap: 8px; }
+        .meta-item { display: flex; flex-direction: column; }
+        .meta-label { 
+            font-size: 8px; 
+            font-weight: 700; 
+            color: var(--text-muted); 
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+        .meta-value { 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .font-mono { font-family: 'Geist Mono', monospace; font-size: 12px; }
+
+        .tag-footer {
+            border-top: 1px solid var(--border);
+            padding: 6px 16px;
+            background: #fcfdfd;
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .toolbar { display: none; }
+            .sheet { margin-top: 0; padding: 0; max-width: 100%; }
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 10mm; }
+            .asset-tag { box-shadow: none; border-color: #000; }
+        }
     </style>
 </head>
 <body>
     <div class="toolbar">
-        <div>
-            <h1>📋 AssetLink QR Codes</h1>
-            <p>${selectedAssets.length} asset label${selectedAssets.length > 1 ? 's' : ''} selected</p>
-        </div>
-        <button class="btn-download" onclick="downloadQR()">⬇ Download PDF</button>
+        <h1>
+            <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><rect width="9" height="9" x="3" y="3" rx="2"/><path d="M7 14h.01"/><path d="M7 18h.01"/><path d="M11 14h.01"/><path d="M11 18h.01"/><path d="M15 14h.01"/><path d="M15 18h.01"/></svg>
+            AssetLink Tag Generation
+        </h1>
+        <div class="count">${selectedAssets.length} labels generated</div>
+        <button class="btn-print" onclick="window.print()">
+            <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            Print Labels
+        </button>
     </div>
     <div class="sheet">
         <div class="grid">${cards}</div>
     </div>
-    <script>
-        function downloadQR() {
-            window.print();
-        }
-    <\/script>
 </body>
 </html>`;
 
