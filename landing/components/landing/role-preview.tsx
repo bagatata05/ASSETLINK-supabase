@@ -206,7 +206,7 @@ function PrincipalDashboard() {
       <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { label: "Open today", value: 4 },
-          { label: "Avg. response", value: "1.2d" },
+          { label: "Pending approvals", value: 3 },
           { label: "Resolved · 30d", value: 38 },
           { label: "Escalated", value: 2 },
         ].map((s) => (
@@ -339,10 +339,12 @@ function MaintenanceDashboard() {
                 </button>
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-3">
-              <Progress value={j.progress} className="h-1.5 flex-1" />
-              <span className="w-10 text-right font-mono text-[11px] text-muted-foreground">
-                {j.progress}%
+            <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+                Resolution Proof
+              </span>
+              <span className="text-[10px] text-primary font-bold">
+                Photo verification required
               </span>
             </div>
           </li>
