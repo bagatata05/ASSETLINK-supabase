@@ -295,7 +295,7 @@ function AssignScreen() {
           {[
             { name: "Mang Ronnie", role: "Lead maintenance", load: "2 open", active: true },
             { name: "Kuya Jun", role: "Carpentry", load: "1 open" },
-            { name: "Escalate → Barangay", role: "For budget request", load: "" },
+            { name: "Escalate → Supervisor", role: "For budget approval", load: "" },
           ].map((p) => (
             <div
               key={p.name}
