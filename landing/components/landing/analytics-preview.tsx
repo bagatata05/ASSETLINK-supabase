@@ -80,7 +80,7 @@ export function AnalyticsPreview() {
               Turn years of paper trails into decisions you can defend.
             </h2>
             <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
-              Principals, barangay officials, and school administrators get the same ground-truth data —
+              Principals, district supervisors, and school administrators get the same ground-truth data —
               where damage concentrates, how fast it gets resolved, and where resources are actually
               needed next.
             </p>
