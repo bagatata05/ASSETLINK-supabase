@@ -9,31 +9,31 @@ import { Reveal } from "./motion"
 const FAQS = [
   {
     q: "Do teachers need to install an app to scan QR codes?",
-    a: "No. The printable QR tags open a secure web URL, so any phone camera can scan them — no app install, no Play Store account, no storage concerns. Maintenance staff and principals can optionally install a PWA for faster access.",
+    a: "No. The QR tags open a simple web link in any phone browser. There's no app to install, no account required to scan, and no storage used on your phone. Just scan and view.",
   },
   {
-    q: "How is data protected and who can see what?",
-    a: "Every role has a scoped view enforced at the database level (row-level security). Teachers see only their reports. Principals see their school. Admins see aggregated maintenance data — never individual PII. Photos are stored in private storage with signed URLs, and passwords are hashed securely.",
+    q: "How is my data protected?",
+    a: "We use secure school-level filters. Teachers only see their own reports, while the Principal and Maintenance staff see the full school log. All photos and details are stored securely and are only accessible to authorized staff.",
   },
   {
-    q: "How are QR tags printed and what if one is damaged?",
-    a: "Authorized personnel print tags in batches from the dashboard onto weather-resistant sticker stock. If a tag is torn or missing, it can be regenerated and reprinted from the asset's history page — the asset ID never changes, so the repair history stays intact.",
+    q: "How are QR tags printed and what if one is lost?",
+    a: "The Principal or Admin can print tags directly from the dashboard onto sticker paper. If a tag is lost or damaged, it can be reprinted instantly — the asset's history is always saved in the system.",
   },
   {
-    q: "How do I know if my account has been verified?",
-    a: "After registration, you'll see a dedicated 'Awaiting Admin Approval' screen. The Principal reviews all professional metadata — including your Employee ID and Department — before granting access to the dashboard. You'll be able to sign in once your role is authorized.",
+    q: "How do I know if my account is approved?",
+    a: "After signing up, your account stays in a 'Pending' state until the Principal verifies your details. Once they confirm your role, you'll be able to log in and start using the dashboard.",
   },
   {
-    q: "What professional details are required to join?",
-    a: "To ensure school security, we require a valid Employee ID, your Department (for Teachers) or Specialization (for Maintenance), and a Phone Number. This helps the Principal verify your identity and allows for faster communication during urgent repairs.",
+    q: "What details do I need to provide to join?",
+    a: "To keep our school records accurate, we ask for your Name, Employee ID, and Department. This ensures that every repair request is tracked back to the right person for easy follow-up.",
   },
   {
-    q: "Can the Principal assist with scheduling repairs?",
-    a: "Yes. While Maintenance staff usually manage their own schedules, the Principal has a 'Force Edit' mode on the shared calendar. This allows for administrative oversight and emergency rescheduling when priorities shift suddenly.",
+    q: "Can the Principal help manage the repair calendar?",
+    a: "Yes. While maintenance staff update their own tasks, the Principal has a special 'Force Edit' button to help reschedule urgent repairs or manage the school's priorities.",
   },
   {
-    q: "How does the system handle urgent or overdue tasks?",
-    a: "AssetLink tracks Service Level Agreement (SLA) deadlines for every repair. The calendar uses color-coded workload indicators (Light to Heavy) and highlights overdue tasks in red, ensuring that critical school infrastructure fixes are never forgotten.",
+    q: "How does the system track urgent problems?",
+    a: "Every report is assigned a priority level. The maintenance calendar uses colors to show workload and highlights overdue tasks in red so that important fixes are never missed.",
   },
 ]
 

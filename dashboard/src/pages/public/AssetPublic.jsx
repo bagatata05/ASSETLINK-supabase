@@ -89,173 +89,161 @@ export default function AssetPublic() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-2xl mx-auto space-y-8 pb-20 relative z-10"
+            className="max-w-2xl mx-auto space-y-6 pb-20 px-4 relative z-10"
         >
-            {/* Branding Header */}
-            <motion.div variants={itemVariants} className="flex items-center justify-between px-2 pt-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary rounded-[1rem] flex items-center justify-center shadow-xl shadow-primary/20">
-                        <ShieldCheck className="w-6 h-6 text-white" />
+            {/* Simple Header */}
+            <motion.div variants={itemVariants} className="flex items-center justify-between pt-6">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg shadow-primary/20">
+                        <ShieldCheck className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-serif font-black tracking-tight text-foreground uppercase">Asset<span className="text-primary italic">Link</span></h2>
-                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/30 leading-none">Security Protocol Active</p>
+                        <h2 className="text-sm font-bold tracking-tight text-foreground">Asset<span className="text-primary">Link</span></h2>
+                        <p className="text-[10px] font-medium text-muted-foreground leading-none">Official School Registry</p>
                     </div>
                 </div>
                 <div className="text-right">
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 block">Timestamp</span>
-                    <span className="text-[10px] font-black text-foreground">{format(new Date(), 'HH:mm:ss')}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground/60 block uppercase tracking-wider">Status Check</span>
+                    <span className="text-[11px] font-semibold text-foreground">{format(new Date(), 'MMM d, h:mm a')}</span>
                 </div>
             </motion.div>
 
-            {/* Hero Asset Card */}
+            {/* Main Asset Information */}
             <motion.div 
                 variants={itemVariants}
-                className="bg-white rounded-[2.5rem] border border-border shadow-2xl shadow-primary/5 overflow-hidden relative"
+                className="bg-card rounded-[2rem] border border-border shadow-xl shadow-black/[0.02] overflow-hidden"
             >
-                <div className="h-3 bg-primary absolute top-0 left-0 w-full" />
-                <div className="p-10 pt-14">
-                    <div className="flex flex-col gap-8">
-                        <div className="flex items-start justify-between gap-6">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary italic">Unit Identification</span>
+                <div className="p-8 md:p-10">
+                    <div className="flex flex-col gap-6">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Asset Information</span>
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-serif font-black text-foreground tracking-tighter leading-[0.9] text-balance">{asset.name}</h1>
-                                <p className="text-sm font-black text-muted-foreground/40 mt-1 uppercase tracking-widest leading-none">System Registry #{asset.asset_code}</p>
+                                <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight leading-tight">{asset.name}</h1>
+                                <p className="text-sm font-medium text-muted-foreground">Asset ID: <span className="font-mono">{asset.asset_code}</span></p>
                             </div>
-                            <div className="w-24 h-24 rounded-[2rem] bg-slate-50 flex items-center justify-center border border-border/50 shrink-0 shadow-inner">
-                                <Package className="w-12 h-12 text-primary/30" />
+                            <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center border border-border/50 shrink-0">
+                                <Package className="w-10 h-10 text-primary/40" />
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-3">
-                            <span className="text-[10px] font-black uppercase tracking-[0.1em] bg-slate-50 border border-border px-5 py-2.5 rounded-2xl text-foreground/60 shadow-sm">{asset.category}</span>
-                            <div className="scale-110 origin-left">
+                        <div className="flex flex-wrap gap-2">
+                            <span className="text-[11px] font-semibold bg-muted border border-border px-4 py-2 rounded-xl text-foreground/70">{asset.category}</span>
+                            <div className="scale-100 origin-left">
                                 <StatusBadge status={asset.condition} />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-slate-50/50 border-t border-border grid grid-cols-2 divide-x divide-border">
+                <div className="bg-muted/30 border-t border-border grid grid-cols-2 divide-x divide-border">
                     {[
-                        { icon: MapPin, label: 'Tactical Location', value: asset.location || '—' },
-                        { icon: Tag, label: 'Host Institution', value: asset.school_name || '—' },
+                        { icon: MapPin, label: 'Current Location', value: asset.location || 'Not Set' },
+                        { icon: Tag, label: 'Host Institution', value: asset.school_name || 'Guiwan Elementary School' },
                     ].map(({ icon: Icon, label, value }) => (
-                        <div key={label} className="p-8 space-y-2">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 flex items-center gap-2">
-                                <Icon className="w-3.5 h-3.5" /> {label}
+                        <div key={label} className="p-6 space-y-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
+                                <Icon className="w-3 h-3" /> {label}
                             </span>
-                            <p className="text-sm font-black text-foreground/80 truncate leading-tight italic tracking-tight">{value}</p>
+                            <p className="text-sm font-semibold text-foreground truncate">{value}</p>
                         </div>
                     ))}
                 </div>
             </motion.div>
 
-            {/* Extended Logistics Metadata */}
-            <motion.div variants={itemVariants} className="bg-white rounded-[2.5rem] border border-border p-10 shadow-sm grid grid-cols-2 gap-10">
-                <div className="space-y-2 border-r border-border/50 pr-5">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5" /> Procurement Date
+            {/* Quick Stats */}
+            <motion.div variants={itemVariants} className="bg-card rounded-[2rem] border border-border p-8 shadow-sm grid grid-cols-2 gap-8">
+                <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" /> Registry Date
                     </span>
-                    <p className="text-sm font-black text-foreground/70 tracking-tight leading-none italic">
-                        {asset.created_at ? format(new Date(asset.created_at), 'MMMM d, yyyy') : 'Registry Empty'}
+                    <p className="text-sm font-semibold text-foreground">
+                        {asset.created_at ? format(new Date(asset.created_at), 'MMMM d, yyyy') : 'No Date'}
                     </p>
                 </div>
-                <div className="space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 flex items-center gap-2">
-                        <Wrench className="w-3.5 h-3.5" /> Service Cycles
+                <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
+                        <Wrench className="w-3.5 h-3.5" /> Maintenance
                     </span>
-                    <p className="text-sm font-black text-foreground/70 tracking-tight leading-none italic uppercase">{repairs.length} Historical Events</p>
+                    <p className="text-sm font-semibold text-foreground">{repairs.length} Total Records</p>
                 </div>
             </motion.div>
 
-            {/* Repair History Container */}
-            <motion.div variants={itemVariants} className="bg-white rounded-[2.5rem] border border-border overflow-hidden shadow-sm">
-                <div className="px-10 py-8 border-b border-border bg-slate-50/30 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center shadow-sm">
-                            <Wrench className="w-5 h-5 text-primary" />
+            {/* Maintenance Log */}
+            <motion.div variants={itemVariants} className="bg-card rounded-[2.2rem] border border-border overflow-hidden shadow-sm">
+                <div className="px-8 py-6 border-b border-border bg-muted/20 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center shadow-sm">
+                            <Wrench className="w-4.5 h-4.5 text-primary" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-serif font-black text-foreground tracking-tighter leading-none">Resolution <span className="text-primary italic">Timeline</span></h2>
-                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 mt-1">Lifecycle event logs</p>
+                            <h2 className="text-lg font-bold text-foreground tracking-tight">Repair History</h2>
+                            <p className="text-[10px] font-medium text-muted-foreground">Past repairs and updates</p>
                         </div>
                     </div>
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-white border border-border px-4 py-2 rounded-full text-muted-foreground/60 shadow-sm">{repairs.length} Records</span>
                 </div>
                 <div className="divide-y divide-border">
                     {repairs.length === 0 ? (
-                        <div className="text-center py-24 px-10">
-                            <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-border/50">
-                                <AlertTriangle className="w-10 h-10 text-muted-foreground/10" />
+                        <div className="text-center py-20 px-8">
+                            <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-border/50">
+                                <AlertTriangle className="w-8 h-8 text-muted-foreground/20" />
                             </div>
-                            <h3 className="text-xl font-serif font-black text-foreground italic mb-2 tracking-tight">Pristine Status Protocol</h3>
-                            <p className="text-xs text-muted-foreground font-medium opacity-50 max-w-[240px] mx-auto">No adjustive maneuvers have been initialized for this architectural unit.</p>
+                            <h3 className="text-lg font-bold text-foreground mb-1">No Repairs Found</h3>
+                            <p className="text-xs text-muted-foreground font-medium max-w-[220px] mx-auto">This asset is currently in good standing with no past issues reported.</p>
                         </div>
-                    ) : repairs.map((r, idx) => (
-                        <div key={r.id} className="p-10 hover:bg-slate-50/30 transition-all group flex gap-8">
-                            <div className="flex flex-col items-center gap-2 pt-1 border-r border-border pr-8 min-w-[120px] shrink-0">
-                                <span className="text-sm font-black text-foreground leading-none">{r.created_at ? format(new Date(r.created_at), 'MMM d') : '-'}</span>
-                                <span className="text-[10px] font-black uppercase text-muted-foreground/30 tracking-widest leading-none">{r.created_at ? format(new Date(r.created_at), 'yyyy') : '-'}</span>
+                    ) : repairs.map((r) => (
+                        <div key={r.id} className="p-8 hover:bg-muted/10 transition-all flex gap-6">
+                            <div className="flex flex-col gap-1 min-w-[70px] pt-1">
+                                <span className="text-sm font-bold text-foreground">{r.created_at ? format(new Date(r.created_at), 'MMM d') : '-'}</span>
+                                <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-widest">{r.created_at ? format(new Date(r.created_at), 'yyyy') : '-'}</span>
                             </div>
-                            <div className="flex-1 min-w-0 space-y-4">
-                                <p className="text-base font-black text-foreground leading-tight group-hover:text-primary transition-colors tracking-tight">{r.description}</p>
-                                <div className="flex flex-wrap items-center gap-5">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary/20" />
-                                        <span className="text-[11px] font-black text-muted-foreground/40 uppercase tracking-tighter leading-none italic">Verified by {r.reported_by_name || 'Protocol'}</span>
-                                    </div>
-                                    {r.maintenance_notes && (
-                                        <div className="text-[10px] font-black text-primary italic bg-primary/[0.03] px-3 py-1 rounded-full border border-primary/10 tracking-tight leading-none">Intelligence Attached</div>
-                                    )}
+                            <div className="flex-1 min-w-0 space-y-3">
+                                <div className="flex flex-wrap gap-2 mb-1">
+                                    <StatusBadge status={r.status} size="sm" />
+                                    <StatusBadge status={r.priority} size="sm" />
+                                </div>
+                                <p className="text-sm font-bold text-foreground leading-snug tracking-tight">{r.description}</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/30" />
+                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tight">Reported by {r.reported_by_name || 'Staff'}</span>
                                 </div>
                                 {r.maintenance_notes && (
-                                    <div className="p-6 bg-slate-50 rounded-[1.5rem] border border-border/50 text-[13px] text-muted-foreground leading-relaxed italic border-l-8 border-l-primary/10 tracking-tight font-medium shadow-inner">
+                                    <div className="p-5 bg-muted/50 rounded-2xl border border-border/50 text-[13px] text-muted-foreground leading-relaxed italic font-medium">
                                         "{r.maintenance_notes}"
                                     </div>
                                 )}
                             </div>
-                            <div className="flex flex-col gap-2 items-end flex-shrink-0 pt-1">
-                                <div className="scale-100 origin-right shadow-sm rounded-full">
-                                    <StatusBadge status={r.status} />
-                                </div>
-                                <div className="scale-90 origin-right opacity-50">
-                                    <StatusBadge status={r.priority} />
-                                </div>
-                            </div>
                         </div>
                     ))}
                 </div>
             </motion.div>
 
-            {/* High-Intent Cta Section */}
+            {/* Simple CTA Section */}
             <motion.div 
                 variants={itemVariants}
-                whileHover={{ scale: 1.01 }}
-                className="bg-primary rounded-[3rem] p-12 text-center text-white shadow-[0_40px_80px_-20px_rgba(0,128,128,0.3)] relative overflow-hidden group cursor-pointer"
+                className="bg-primary rounded-[2.5rem] p-10 text-center text-white shadow-xl shadow-primary/20 relative overflow-hidden"
             >
-                <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full -mr-40 -mt-40 blur-[80px] group-hover:bg-white/20 transition-all duration-700" />
                 <div className="relative z-10 space-y-4">
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-white animate-ping" />
-                        <h3 className="text-2xl md:text-3xl font-serif font-black italic tracking-tighter">Incident Command Center</h3>
-                    </div>
-                    <p className="text-sm md:text-base font-medium opacity-80 max-w-sm mx-auto leading-relaxed tracking-tight">Authenticated personnel may initialize a restoration request directly via the secure dashboard.</p>
-                    <div className="pt-8">
-                        <Button className="h-16 px-12 bg-white text-primary hover:bg-[#FDFCF7] rounded-2xl text-xs font-black uppercase tracking-[0.3em] transition-all shadow-2xl active:scale-[0.98] gap-3">
-                            Signal Restoration <ArrowRight className="w-5 h-5" />
+                    <h3 className="text-2xl font-bold tracking-tight">Report a Problem</h3>
+                    <p className="text-sm font-medium opacity-80 max-w-xs mx-auto leading-relaxed">
+                        Need to report an issue with this asset? Click the button below to start a repair request.
+                    </p>
+                    <div className="pt-4">
+                        <Button 
+                            onClick={() => window.location.href = `/report-damage?id=${assetId}`}
+                            className="h-14 px-10 bg-white text-primary hover:bg-white/90 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-xl gap-2"
+                        >
+                            Report Issue <ArrowRight className="w-4 h-4" />
                         </Button>
                     </div>
                 </div>
             </motion.div>
 
-            {/* Regulatory Footer */}
-            <motion.div variants={itemVariants} className="text-center pt-12 border-t border-border/40 opacity-20">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-foreground italic leading-none">Proprietary Nexus Technology · AssetLink Deployment v2.4.0</p>
-                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground mt-4 opacity-50">Confidentiality Protocol Active · Secure Session Verified</p>
+            {/* Simple Footer */}
+            <motion.div variants={itemVariants} className="text-center pt-8 border-t border-border/40">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">AssetLink Inventory Control · 2024</p>
             </motion.div>
         </motion.div>
     );

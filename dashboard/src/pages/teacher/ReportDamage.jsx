@@ -35,7 +35,17 @@ export default function ReportDamage() {
                 console.error("Error fetching assets:", error);
                 return;
             }
-            setAssets(data || []);
+            
+            const allAssets = data || [];
+            setAssets(allAssets);
+
+            // Pre-select asset if ID is in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const preSelectId = urlParams.get('id');
+            if (preSelectId) {
+                const found = allAssets.find(a => a.id === preSelectId);
+                if (found) setSelectedAsset(found);
+            }
         };
 
         fetchAssets();
