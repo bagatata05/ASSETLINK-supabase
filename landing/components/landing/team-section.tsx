@@ -64,7 +64,7 @@ export function TeamSection() {
               Five students building one tool for thousands of classrooms.
             </h2>
             <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
-              A capstone team spanning software engineering, field research, and DepEd policy —
+              A team spanning software engineering, field research, and DepEd policy —
               each accountable for a distinct part of the deliverable.
             </p>
           </div>
