@@ -33,8 +33,8 @@ const STEPS = [
     icon: Wrench,
     who: "Principal",
     title: "Triage & assign",
-    desc: "Principals review, set priority, and assign maintenance staff — or escalate to barangay or DepEd when budget or external help is needed.",
-    takeaway: "A clear accountability chain from request to assigned worker.",
+    desc: "Principals review incoming reports, set the priority level, and assign maintenance staff to handle the repair.",
+    takeaway: "A clear accountability chain from initial request to assigned worker.",
   },
   {
     icon: BadgeCheck,
