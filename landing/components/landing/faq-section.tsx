@@ -9,35 +9,31 @@ import { Reveal } from "./motion"
 const FAQS = [
   {
     q: "Do teachers need to install an app to scan QR codes?",
-    a: "No. The printable QR tags open a secure web URL, so any phone camera can scan them — no app install, no Play Store account, no storage concerns. Maintenance staff and principals can optionally install a PWA for offline work queues and faster access.",
-  },
-  {
-    q: "What happens when internet connectivity drops?",
-    a: "AssetLink is offline-first. Teachers can scan tags, attach photos, and file tickets without a connection — entries queue on the device and sync automatically once the school is back online. The ticket ID and timestamp are preserved, so there's no ambiguity about when damage was reported.",
+    a: "No. The printable QR tags open a secure web URL, so any phone camera can scan them — no app install, no Play Store account, no storage concerns. Maintenance staff and principals can optionally install a PWA for faster access.",
   },
   {
     q: "How is data protected and who can see what?",
-    a: "Every role has a scoped view enforced at the database level (row-level security). Teachers see only their reports. Principals see their school. DepEd supervisors see aggregated division data — never individual PII. Photos are stored in private storage with signed URLs, and passwords are hashed with bcrypt.",
-  },
-  {
-    q: "Does this replace DepEd's existing MOOE or property records?",
-    a: "No. AssetLink complements official property records by providing the day-to-day reporting and repair workflow. Exported reports (CSV, PDF) align with DepEd property custodian forms, so your official records stay authoritative and audit-ready.",
-  },
-  {
-    q: "Can a barangay or LGU help fund repairs through the system?",
-    a: "Yes. When a ticket exceeds a configurable threshold or is flagged as structural, principals can escalate to the barangay official's view. Barangay users get a monitoring dashboard — no editing rights on school data — so accountability stays with the school.",
+    a: "Every role has a scoped view enforced at the database level (row-level security). Teachers see only their reports. Principals see their school. Admins see aggregated maintenance data — never individual PII. Photos are stored in private storage with signed URLs, and passwords are hashed securely.",
   },
   {
     q: "How are QR tags printed and what if one is damaged?",
-    a: "Admins print tags in batches from the admin dashboard onto weather-resistant sticker stock. If a tag is torn or missing, any authorized user can regenerate and reprint it from the asset's history page — the asset ID never changes, so the repair history stays intact.",
+    a: "Authorized personnel print tags in batches from the dashboard onto weather-resistant sticker stock. If a tag is torn or missing, it can be regenerated and reprinted from the asset's history page — the asset ID never changes, so the repair history stays intact.",
   },
   {
-    q: "What is the commitment for Guiwan Elementary staff?",
-    a: "The system is designed for daily use. Teachers only need a 5-minute orientation to start reporting. Our maintenance team uses standard office equipment to manage repairs. No hardware purchase is required beyond the phones staff already carry.",
+    q: "How do I know if my account has been verified?",
+    a: "After registration, you'll see a dedicated 'Awaiting Admin Approval' screen. The Principal reviews all professional metadata — including your Employee ID and Department — before granting access to the dashboard. You'll be able to sign in once your role is authorized.",
   },
   {
-    q: "Is AssetLink open to other government or NGO use cases?",
-    a: "The core asset → scan → ticket → repair → verify flow generalizes well to barangay halls, rural health units, and day-care centers. We're prioritizing Guiwan Elementary first as our flagship implementation, but the codebase is structured for future scaling.",
+    q: "What professional details are required to join?",
+    a: "To ensure school security, we require a valid Employee ID, your Department (for Teachers) or Specialization (for Maintenance), and a Phone Number. This helps the Principal verify your identity and allows for faster communication during urgent repairs.",
+  },
+  {
+    q: "Can the Principal assist with scheduling repairs?",
+    a: "Yes. While Maintenance staff usually manage their own schedules, the Principal has a 'Force Edit' mode on the shared calendar. This allows for administrative oversight and emergency rescheduling when priorities shift suddenly.",
+  },
+  {
+    q: "How does the system handle urgent or overdue tasks?",
+    a: "AssetLink tracks Service Level Agreement (SLA) deadlines for every repair. The calendar uses color-coded workload indicators (Light to Heavy) and highlights overdue tasks in red, ensuring that critical school infrastructure fixes are never forgotten.",
   },
 ]
 
