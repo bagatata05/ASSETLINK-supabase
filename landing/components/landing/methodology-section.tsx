@@ -29,7 +29,7 @@ const PILLARS = [
     bullets: [
       "Public elementary and secondary school teachers and principals",
       "Division Maintenance and Operations personnel (DepEd)",
-      "Barangay officials in local LGU partnerships",
+      "School-based facilities management teams",
     ],
   },
   {
