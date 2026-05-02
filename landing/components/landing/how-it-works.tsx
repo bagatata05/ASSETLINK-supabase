@@ -23,7 +23,7 @@ const STEPS = [
   {
     icon: Wrench,
     title: "Assign",
-    desc: "Principals triage and assign to maintenance. Escalate to barangay or DepEd when needed.",
+    desc: "Principals triage and assign to maintenance. Priority repairs get immediate attention.",
     who: "Principal",
   },
   {
@@ -46,8 +46,7 @@ export function HowItWorks() {
             </h2>
             <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
               AssetLink builds a clear, auditable chain of accountability for every maintenance
-              request — visible to the teacher who reported it, the principal who approved it, and the
-              supervisor monitoring the division.
+              request — visible to the teacher who reported it, and the principal who approved it.
             </p>
           </div>
         </Reveal>
