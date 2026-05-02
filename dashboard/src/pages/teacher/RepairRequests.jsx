@@ -13,6 +13,7 @@ import { sileo } from 'sileo';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { notifyTechnicianOfRework, notifyTechnicianOfVerification } from '@/lib/notifications';
 
 const STATUSES = ['Pending', 'Approved', 'In Progress', 'Completed', 'Rejected', 'Pending Teacher Verification'];
 
@@ -91,6 +92,9 @@ export default function TeacherRepairRequests() {
 
             if (mtError) throw mtError;
 
+            // 📧 Notify Technician
+            notifyTechnicianOfVerification(selected);
+
             sileo.success({
                 title: 'Repair Verified',
                 description: 'The restoration protocol has been successfully finalized.'
@@ -134,6 +138,9 @@ export default function TeacherRepairRequests() {
                 .eq('repair_request_id', selected.id);
 
             if (mtError) throw mtError;
+
+            // 📧 Notify Technician
+            notifyTechnicianOfRework(selected, verificationFeedback);
 
             sileo.success({
                 title: 'Tactical Rework Initiated',
