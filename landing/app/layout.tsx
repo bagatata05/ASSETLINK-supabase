@@ -25,12 +25,12 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "AssetLink — QR-enabled School Asset & Repair Tracking",
   description:
-    "AssetLink transforms school asset management from paper log-books into a transparent, QR-enabled workflow. Report damage in one scan, route repairs to the right hands, and give DepEd full visibility — in service of SDG 4: Quality Education.",
+    "AssetLink transforms school asset management from paper log-books into a transparent, QR-enabled workflow. Report damage in one scan, route repairs to the right hands — in service of SDG 4: Quality Education.",
   generator: "v0.app",
   openGraph: {
     title: "AssetLink — QR-enabled School Asset & Repair Tracking",
     description:
-      "Report, track, and resolve school repairs with one scan. Built for teachers, principals, maintenance staff, and DepEd supervisors.",
+      "Report, track, and resolve school repairs with one scan. Built for teachers, principals, and maintenance staff.",
     type: "website",
   },
   icons: {
