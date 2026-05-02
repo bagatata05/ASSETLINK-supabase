@@ -419,12 +419,12 @@ export default function Assets() {
                             <Printer className="w-4 h-4" /> Export Labels ({selected.size})
                         </Button>
                     )}
-                    {(role === 'admin' || role === 'principal' || role === 'supervisor') && (
+                    {(role === 'admin' || role === 'principal') && (
                         <Button onClick={() => { setSelectMode(s => !s); setSelected(new Set()); }} variant={selectMode ? 'secondary' : 'outline'} className="h-9 text-sm gap-2">
                             <QrCode className="w-4 h-4" /> {selectMode ? 'Dismiss' : 'Batch Labels'}
                         </Button>
                     )}
-                    {(role === 'admin' || role === 'principal' || role === 'supervisor') && (
+                    {(role === 'admin' || role === 'principal') && (
                         <Button onClick={openCreate} className="h-9 bg-[hsl(172,75%,17%)] hover:bg-[hsl(172,75%,22%)] text-white text-sm gap-2">
                             <Plus className="w-4 h-4" /> New Asset
                         </Button>
