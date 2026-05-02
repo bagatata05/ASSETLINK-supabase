@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { calculateDeadline } from '@/lib/slaUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { notifyTechnicianOfAssignment, notifyTeacherOfApproval } from '@/lib/notifications';
 
 const STATUSES = ['Pending', 'Approved', 'In Progress', 'Completed', 'Rejected'];
 
@@ -27,7 +28,7 @@ export default function PrincipalRepairRequests() {
     const [notes, setNotes] = useState('');
     const [assignedTo, setAssignedTo] = useState('');
     const [maintenanceStaff, setMaintenanceStaff] = useState([]);
-    const [scheduledStartDate, setScheduledStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [scheduledStartDate, setScheduledStartDate] = useState(null);
     const [saving, setSaving] = useState(false);
 
     const fetchRequests = async () => {
@@ -102,15 +103,16 @@ export default function PrincipalRepairRequests() {
         setSaving(true);
         try {
             const now = new Date().toISOString();
-            const staffMember = maintenanceStaff.find(s => s.full_name === assignedTo);
-            const staffEmail = staffMember?.email || '';
+            const staffMember = maintenanceStaff.find(s => s.email === assignedTo);
+            const staffEmail = assignedTo; // assignedTo is now the email
+            const staffName = staffMember?.full_name || 'Assigned Technician';
 
             const { error: rrError } = await supabase
                 .from('repair_requests')
                 .update({
                     status: 'In Progress',
                     principal_notes: notes,
-                    assigned_to_name: assignedTo,
+                    assigned_to_name: staffName,
                     assigned_to_email: staffEmail,
                     approved_by_name: currentUser?.full_name,
                     approved_at: now,
@@ -132,7 +134,7 @@ export default function PrincipalRepairRequests() {
                     reported_by_name: selected.reported_by_name || '',
                     asset_code: selected.asset_code || '',
                     school_name: selected.school_name || currentUser?.school_name || '',
-                    assigned_to_name: assignedTo,
+                    assigned_to_name: staffName,
                     assigned_to_email: staffEmail,
                     priority: selected.priority,
                     status: 'Assigned',
@@ -142,6 +144,22 @@ export default function PrincipalRepairRequests() {
                     updated_at: now
                 }]);
             if (mtError) throw mtError;
+
+            // 📧 Notify Technician
+            notifyTechnicianOfAssignment({
+                asset_name: selected.asset_name,
+                school_name: selected.school_name || currentUser?.school_name || 'Central Campus',
+                priority: selected.priority,
+                description: selected.description,
+                assigned_to_email: staffEmail
+            });
+
+            // 📧 Notify Teacher
+            notifyTeacherOfApproval({
+                asset_name: selected.asset_name,
+                reported_by_email: selected.reported_by_email,
+                assigned_to_name: assignedTo
+            });
 
             sileo.success({ title: 'Request Approved', description: `Assigned to ${assignedTo} and scheduled for ${scheduledStartDate}.` });
             setSelected(null);
@@ -297,14 +315,14 @@ export default function PrincipalRepairRequests() {
                                                 <Label className="text-xs font-bold text-foreground">Assign Maintenance Personnel</Label>
                                                 <Select value={assignedTo} onValueChange={setAssignedTo}>
                                                     <SelectTrigger className="h-12 bg-muted/20 border-border/60 hover:border-primary/50 hover:bg-muted/30 transition-all rounded-xl ring-offset-background focus:ring-primary/20">
-                                                        <SelectValue placeholder="Select specialized staff..." />
+                                                        <SelectValue placeholder="Choose maintenance professional..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-xl border-border/80 shadow-xl">
                                                         {maintenanceStaff.length === 0 ? (
                                                             <p className="p-3 text-xs text-muted-foreground italic">No specialized staff available</p>
                                                         ) : (
                                                             maintenanceStaff.map(staff => (
-                                                                <SelectItem key={staff.email} value={staff.full_name} className="py-2.5 rounded-lg focus:bg-primary/5 cursor-pointer">
+                                                                <SelectItem key={staff.email} value={staff.email} className="py-2.5 rounded-lg focus:bg-primary/5 cursor-pointer">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-sm font-bold text-foreground">{staff.full_name}</span>
                                                                         <span className="text-[10px] text-muted-foreground/60 font-medium px-2 py-0.5 bg-muted rounded-full border border-border/40">
