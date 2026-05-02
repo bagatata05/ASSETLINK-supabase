@@ -15,7 +15,7 @@ import { calculateDeadline } from '@/lib/slaUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-const STATUSES = ['Pending', 'Approved', 'In Progress', 'Completed', 'Rejected', 'Escalated'];
+const STATUSES = ['Pending', 'Approved', 'In Progress', 'Completed', 'Rejected'];
 
 export default function PrincipalRepairRequests() {
     const { currentUser } = useAuth();
@@ -167,18 +167,6 @@ export default function PrincipalRepairRequests() {
         });
     }
 
-    async function handleEscalate() {
-        setEscalationAttempted(true);
-        if (!escalationReason.trim()) {
-            sileo.warning({ title: 'Escalation Reason Required', description: 'Please provide a reason before escalating this request to the supervisor.' });
-            return;
-        }
-        await updateRequest(selected.id, 'Escalated', { 
-            escalated_reason: escalationReason,
-            escalated_by_name: currentUser?.full_name,
-            escalated_at: new Date().toISOString()
-        });
-    }
 
     return (
         <div className="space-y-6 max-w-6xl mx-auto pb-12">
@@ -234,11 +222,11 @@ export default function PrincipalRepairRequests() {
             </div>
 
             <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-                <DialogContent className="sm:max-w-4xl p-0 overflow-hidden border-none bg-background shadow-2xl">
+                <DialogContent className="sm:max-w-4xl p-0 bg-background shadow-2xl rounded-2xl max-h-[95vh] overflow-y-auto border-none">
                     {selected && (
-                        <div className="flex flex-col md:flex-row h-full max-h-[90vh]">
+                        <div className="flex flex-col md:flex-row h-full lg:max-h-[90vh]">
                             {/* Left Side: Damage Report & Information */}
-                            <div className="w-full md:w-1/2 bg-muted/30 border-r border-border p-8 overflow-y-auto">
+                            <div className="w-full md:w-1/2 bg-muted/30 border-r border-border p-8 lg:overflow-y-auto">
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
@@ -293,7 +281,7 @@ export default function PrincipalRepairRequests() {
                             </div>
 
                             {/* Right Side: Approval & Assignment Form */}
-                            <div className="w-full md:w-1/2 p-8 overflow-y-auto bg-background flex flex-col justify-between">
+                            <div className="w-full md:w-1/2 p-8 lg:overflow-y-auto bg-background flex flex-col justify-between">
                                 <div className="space-y-8">
                                     <div className="flex items-center justify-between border-b border-border/60 pb-5">
                                         <div>
@@ -385,28 +373,6 @@ export default function PrincipalRepairRequests() {
                                             </Button>
                                         </div>
 
-                                        <div className="pt-4 mt-4 border-t border-border/40">
-                                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest text-center mb-3">Critical Incident Protocol</p>
-                                            <div className="flex items-center gap-3">
-                                                <Input 
-                                                    value={escalationReason}
-                                                    onChange={e => setEscalationReason(e.target.value)}
-                                                    placeholder="Reason for external escalation..." 
-                                                    className={cn(
-                                                        "h-10 bg-muted/10 border-border/40 rounded-lg text-xs transition-all",
-                                                        escalationAttempted && !escalationReason.trim() && "border-rose-400 ring-rose-50"
-                                                    )} 
-                                                />
-                                                <Button 
-                                                    onClick={handleEscalate}
-                                                    variant="ghost" 
-                                                    size="sm" 
-                                                    className="h-10 px-4 text-xs font-bold text-amber-600 hover:bg-amber-50 hover:text-amber-700 rounded-lg"
-                                                >
-                                                    Escalate
-                                                </Button>
-                                            </div>
-                                        </div>
                                     </div>
                                 )}
                             </div>
