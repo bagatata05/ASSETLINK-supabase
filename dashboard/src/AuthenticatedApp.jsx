@@ -36,8 +36,6 @@ import Tasks from './pages/maintenance/Tasks';
 import MaintenanceCalendar from './pages/maintenance/MaintenanceCalendar';
 
 // Supervisor Pages
-import DashboardSupervisor from './pages/supervisor/Dashboard';
-import SupervisorOversight from './pages/supervisor/SupervisorOversight';
 
 // Public Pages
 import AssetPublic from './pages/public/AssetPublic';
@@ -142,7 +140,6 @@ const AuthenticatedApp = () => {
     const renderDashboard = () => {
         if (role === 'maintenance') return <DashboardMaintenance />;
         if (role === 'principal' || role === 'admin') return <DashboardPrincipal />;
-        if (role === 'supervisor') return <DashboardSupervisor />;
         return <DashboardTeacher />;
     };
 
