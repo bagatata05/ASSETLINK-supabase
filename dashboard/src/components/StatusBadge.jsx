@@ -7,7 +7,6 @@ const statusConfig = {
     'In Progress': { bg: 'bg-indigo-50 border-indigo-200/70', text: 'text-indigo-700', dot: 'bg-indigo-400' },
     Completed: { bg: 'bg-emerald-50 border-emerald-200/70', text: 'text-emerald-700', dot: 'bg-emerald-400' },
     Rejected: { bg: 'bg-rose-50 border-rose-200/70', text: 'text-rose-700', dot: 'bg-rose-400' },
-    Escalated: { bg: 'bg-purple-50 border-purple-200/70', text: 'text-purple-700', dot: 'bg-purple-400' },
 
     // Priority
     Low: { bg: 'bg-slate-50 border-slate-200/70', text: 'text-slate-600', dot: 'bg-slate-400' },
