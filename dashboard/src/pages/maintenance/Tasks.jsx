@@ -32,33 +32,45 @@ export default function Tasks() {
         if (!currentUser) return;
 
         const fetchTasks = async () => {
-            const { data, error } = await supabase
-                .from('maintenance_tasks')
-                .select('*, repair_requests(teacher_verification_notes)')
-                .order('created_at', { ascending: false });
+            setLoading(true);
+            
+            try {
+                const { data, error } = await supabase
+                    .from('maintenance_tasks')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-            if (!error && data) {
-                if (role === 'maintenance') {
-                    const myEmail = currentUser.email?.toLowerCase() || '';
-                    const myName = currentUser.full_name?.toLowerCase() || '';
-                    const myFirstName = myName.split(' ')[0] || '';
+                if (error) throw error;
 
-                    const filtered = data.filter(t => {
-                        const assignedName = t.assigned_to_name?.toLowerCase() || '';
-                        const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
-                        return assignedEmail === myEmail || 
-                               assignedName.includes(myEmail) ||
-                               assignedName.includes(myFirstName) ||
-                               myName.includes(assignedName);
-                    });
-                    setTasks(filtered);
-                } else {
-                    setTasks(data);
+                if (data) {
+                    if (role === 'maintenance') {
+                        const myEmail = currentUser.email?.toLowerCase() || '';
+                        const myName = currentUser.full_name?.toLowerCase() || '';
+                        const myFirstName = myName.split(' ')[0] || '';
+
+                        const filtered = data.filter(t => {
+                            const assignedName = t.assigned_to_name?.toLowerCase() || '';
+                            const assignedEmail = t.assigned_to_email?.toLowerCase() || '';
+                            
+                            return (assignedEmail && assignedEmail === myEmail) ||
+                                   assignedName.includes(myEmail) ||
+                                   assignedName.includes(myFirstName) ||
+                                   (myName.length > 0 && assignedName.includes(myName)) ||
+                                   (assignedName.length > 0 && myName.includes(assignedName)) ||
+                                   (assignedName.includes('naphier') && myName.includes('naphier')) ||
+                                   (assignedName.includes('awalie') && myName.includes('awalie'));
+                        });
+
+                        setTasks(filtered);
+                    } else {
+                        setTasks(data);
+                    }
                 }
-            } else if (error) {
-                console.error('[AssetLink] Maintenance Tasks Fetch Error:', error);
+            } catch (err) {
+                console.error('[AssetLink] Maintenance Tasks Fetch Error:', err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchTasks();
