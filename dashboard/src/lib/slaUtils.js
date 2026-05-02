@@ -17,9 +17,10 @@ export const SLA_HOURS = {
  * @returns {Date}
  */
 export function calculateDeadline(startDate, priority) {
-    const start = typeof startDate === 'string' ? parseISO(startDate) : startDate;
+    const baseDate = startDate || new Date();
+    const start = typeof baseDate === 'string' ? parseISO(baseDate) : baseDate;
     const hours = SLA_HOURS[priority] || SLA_HOURS.Medium;
-    return addHours(start, hours);
+    return addHours(isNaN(start.getTime()) ? new Date() : start, hours);
 }
 
 /**
