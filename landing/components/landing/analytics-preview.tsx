@@ -54,7 +54,6 @@ const statusData = [
   { name: "Resolved", value: 128, fill: "var(--primary)" },
   { name: "In progress", value: 28, fill: "color-mix(in oklch, var(--primary) 55%, white)" },
   { name: "Open", value: 14, fill: "var(--accent)" },
-  { name: "Escalated", value: 5, fill: "color-mix(in oklch, var(--foreground) 35%, white)" },
 ]
 
 const statusConfig: ChartConfig = {
@@ -62,7 +61,6 @@ const statusConfig: ChartConfig = {
   Resolved: { label: "Resolved", color: "var(--primary)" },
   "In progress": { label: "In progress", color: "var(--primary)" },
   Open: { label: "Open", color: "var(--accent)" },
-  Escalated: { label: "Escalated", color: "var(--muted-foreground)" },
 }
 
 export function AnalyticsPreview() {
@@ -80,7 +78,7 @@ export function AnalyticsPreview() {
               Turn years of paper trails into decisions you can defend.
             </h2>
             <p className="mt-4 text-pretty text-muted-foreground md:text-lg">
-              Principals, district supervisors, and school administrators get the same ground-truth data —
+              Principals and school administrators get the same ground-truth data —
               where damage concentrates, how fast it gets resolved, and where resources are actually
               needed next.
             </p>
