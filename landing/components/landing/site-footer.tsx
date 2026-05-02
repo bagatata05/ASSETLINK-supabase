@@ -16,7 +16,6 @@ const COLUMNS = [
       { label: "Teachers", href: "#roles" },
       { label: "Principals", href: "#roles" },
       { label: "Maintenance staff", href: "#roles" },
-      { label: "DepEd supervisors", href: "#roles" },
     ],
   },
   {
