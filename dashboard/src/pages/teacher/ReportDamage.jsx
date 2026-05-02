@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { sileo } from 'sileo';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { notifyPrincipalOfNewReport } from '@/lib/notifications';
 
 export default function ReportDamage() {
     const { currentUser } = useAuth();
@@ -124,6 +125,16 @@ export default function ReportDamage() {
                 }]);
 
             if (error) throw error;
+
+            // 📧 Notify Principal
+            notifyPrincipalOfNewReport({
+                asset_name: selectedAsset.name,
+                asset_code: selectedAsset.asset_code,
+                priority: form.priority,
+                reported_by_name: currentUser?.full_name || 'Teacher',
+                reported_by_email: currentUser?.email,
+                description: form.description
+            });
 
             sileo.success({
                 title: 'Report Submitted',
