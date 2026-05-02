@@ -129,7 +129,7 @@ export default function TeacherRepairRequests() {
                 .from('maintenance_tasks')
                 .update({
                     status: 'In Progress',
-                    notes: `REWORK REQUESTED: ${verificationFeedback}`, 
+                    maintenance_notes: `REWORK REQUESTED: ${verificationFeedback}`, 
                     updated_at: new Date().toISOString()
                 })
                 .eq('repair_request_id', selected.id);
@@ -229,11 +229,11 @@ export default function TeacherRepairRequests() {
             </div>
 
             <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-                <DialogContent className="max-w-4xl p-0 overflow-hidden bg-card border border-border shadow-2xl rounded-2xl">
+                <DialogContent className="max-w-4xl p-0 bg-card border border-border shadow-2xl rounded-2xl max-h-[95vh] overflow-y-auto">
                     {selected && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border">
                             {/* LEFT SIDE: Incident Report */}
-                            <div className="flex flex-col h-full max-h-[85vh]">
+                            <div className="flex flex-col h-full lg:max-h-[85vh]">
                                 <div className="p-6 border-b border-border bg-muted/20">
                                     <div className="flex items-center justify-between mb-3">
                                         <div className="flex gap-2">
@@ -249,7 +249,7 @@ export default function TeacherRepairRequests() {
                                     </div>
                                 </div>
 
-                                <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                                <div className="p-6 space-y-6 lg:overflow-y-auto custom-scrollbar">
                                     <div className="space-y-3">
                                         <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Incident Description</Label>
                                         <div className="bg-muted/30 p-4 rounded-xl border border-border/60 text-sm leading-relaxed text-foreground/80 italic">
@@ -311,7 +311,7 @@ export default function TeacherRepairRequests() {
                                     </div>
                                 </div>
 
-                                <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+                                <div className="p-6 space-y-6 lg:overflow-y-auto custom-scrollbar">
                                     {/* Assignment Info */}
                                     <div className="space-y-4">
                                         <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Assigned Team</Label>
