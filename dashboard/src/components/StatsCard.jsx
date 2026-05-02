@@ -1,12 +1,12 @@
 import { cn } from '@/lib/utils';
 
 const colorMap = {
-    teal:   { dot: 'bg-emerald-500', num: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
-    amber:  { dot: 'bg-amber-500',   num: 'text-amber-600',   bg: 'bg-amber-50 border-amber-100' },
-    red:    { dot: 'bg-rose-500',    num: 'text-rose-600',    bg: 'bg-rose-50 border-rose-100' },
-    green:  { dot: 'bg-emerald-500', num: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
-    blue:   { dot: 'bg-sky-500',     num: 'text-sky-600',     bg: 'bg-sky-50 border-sky-100' },
-    purple: { dot: 'bg-violet-500',  num: 'text-violet-600',  bg: 'bg-violet-50 border-violet-100' },
+    teal:   { dot: 'bg-emerald-500', num: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
+    amber:  { dot: 'bg-amber-500',   num: 'text-amber-600 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20' },
+    red:    { dot: 'bg-rose-500',    num: 'text-rose-600 dark:text-rose-400',    bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
+    green:  { dot: 'bg-emerald-500', num: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
+    blue:   { dot: 'bg-sky-500',     num: 'text-sky-600 dark:text-sky-400',     bg: 'bg-sky-50 dark:bg-sky-500/10 border-sky-100 dark:border-sky-500/20' },
+    purple: { dot: 'bg-violet-500',  num: 'text-violet-600 dark:text-violet-400',  bg: 'bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-500/20' },
 };
 
 export default function StatsCard({ title, value, subtitle = '', icon: Icon, color = 'teal', trend = null, className = '' }) {
@@ -20,7 +20,7 @@ export default function StatsCard({ title, value, subtitle = '', icon: Icon, col
             {/* Header row */}
             <div className="flex items-center justify-between mb-4">
                 <p className="label-mono text-muted-foreground">{title}</p>
-                <div className={cn('w-7 h-7 rounded-md border flex items-center justify-center', v.bg)}>
+                <div className={cn('w-7 h-7 rounded-md border flex items-center justify-center transition-colors', v.bg)}>
                     <Icon className={cn('w-3.5 h-3.5', v.num)} />
                 </div>
             </div>
@@ -34,8 +34,8 @@ export default function StatsCard({ title, value, subtitle = '', icon: Icon, col
                     <span className={cn(
                         'text-[11px] font-medium px-1.5 py-0.5 rounded mb-0.5',
                         trend >= 0
-                            ? 'bg-rose-50 text-rose-600'
-                            : 'bg-emerald-50 text-emerald-600'
+                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                     )}>
                         {trend > 0 ? '+' : ''}{trend}%
                     </span>

@@ -91,10 +91,10 @@ export default function Register() {
 
     if (isSuccess) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center bg-white p-8 font-sans overflow-hidden relative">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-8 font-sans relative transition-colors duration-300">
                 {/* Background Decorations */}
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[100px] -z-10" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 rounded-full blur-[100px] -z-10" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[100px] -z-10" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px] -z-10" />
 
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -102,35 +102,35 @@ export default function Register() {
                     className="w-full max-w-md text-center space-y-8 relative z-10"
                 >
                     <div className="relative inline-block">
-                        <div className="w-24 h-24 bg-[#064e3b] rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-200 transform -rotate-6 mx-auto">
+                        <div className="w-24 h-24 bg-emerald-900 dark:bg-emerald-800 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-500/20 transform -rotate-6 mx-auto">
                             <CheckCircle2 className="w-12 h-12 text-white" />
                         </div>
                         <motion.div 
                             animate={{ scale: [1, 1.2, 1] }}
                             transition={{ repeat: Infinity, duration: 2 }}
-                            className="absolute -top-2 -right-2 w-8 h-8 bg-emerald-400 rounded-full border-4 border-white flex items-center justify-center"
+                            className="absolute -top-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full border-4 border-background flex items-center justify-center"
                         >
-                            <Shield className="w-4 h-4 text-[#064e3b]" />
+                            <Shield className="w-4 h-4 text-white" />
                         </motion.div>
                     </div>
 
                     <div className="space-y-3">
-                        <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight">
-                            Registration <span className="text-[#064e3b] italic underline decoration-emerald-200">Sent.</span>
+                        <h2 className="text-4xl font-serif font-black text-foreground tracking-tight">
+                            Registration <span className="text-emerald-700 dark:text-emerald-400 italic underline decoration-emerald-500/30">Sent.</span>
                         </h2>
-                        <p className="text-gray-500 font-medium text-lg leading-relaxed">
-                            Your account is now <span className="text-[#064e3b] font-bold">Awaiting Admin Approval</span>. 
+                        <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+                            Your account is now <span className="text-emerald-700 dark:text-emerald-400 font-bold">Awaiting Admin Approval</span>. 
                             Please wait for the principal to verify your credentials.
                         </p>
                     </div>
 
-                    <div className="p-6 bg-emerald-50/50 rounded-2xl border border-emerald-100 flex items-start gap-4 text-left">
-                        <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
-                            <Mail className="w-5 h-5 text-[#064e3b]" />
+                    <div className="p-6 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 flex items-start gap-4 text-left">
+                        <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center shrink-0">
+                            <Mail className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-[#064e3b] uppercase tracking-widest mb-1">Next Steps</p>
-                            <p className="text-sm text-[#064e3b]/80 font-medium">
+                            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-1">Next Steps</p>
+                            <p className="text-sm text-emerald-700/80 dark:text-emerald-400/80 font-medium">
                                 We'll notify you via email once your account is activated. This usually takes less than 24 hours.
                             </p>
                         </div>
@@ -139,7 +139,7 @@ export default function Register() {
                     <Button 
                         onClick={() => navigate('/login')}
                         variant="outline"
-                        className="h-12 px-8 border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all gap-2"
+                        className="h-12 px-8 border-border bg-card rounded-xl font-bold hover:bg-muted transition-all gap-2"
                     >
                         Back to Login
                     </Button>
@@ -149,21 +149,21 @@ export default function Register() {
     }
 
     return (
-        <div className="h-screen grid lg:grid-cols-2 font-sans bg-white overflow-hidden">
+        <div className="min-h-screen grid lg:grid-cols-2 font-sans bg-background">
             {/* Left Side: Form */}
-            <div className="flex flex-col items-center justify-center px-8 py-10 lg:px-20 animate-fade-in relative overflow-y-auto">
+            <div className="flex flex-col items-center justify-center px-8 py-10 lg:px-20 animate-fade-in relative">
                 <div className="w-full max-w-[440px] space-y-8">
                     {/* Logo & Back Link - EXACT MATCH with Login.jsx */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#064e3b] text-white rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
+                            <div className="w-10 h-10 bg-emerald-900 dark:bg-emerald-800 text-white rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
                                 <QrCode className="w-6 h-6" />
                             </div>
-                            <h1 className="text-2xl font-serif font-black text-[#064e3b] tracking-tight">AssetLink</h1>
+                            <h1 className="text-2xl font-serif font-black text-emerald-900 dark:text-emerald-400 tracking-tight">AssetLink</h1>
                         </div>
                         <a 
                             href={import.meta.env.VITE_LANDING_PAGE_URL || "http://localhost:3000"} 
-                            className="text-xs font-bold text-gray-400 hover:text-[#064e3b] transition-colors flex items-center gap-1.5 uppercase tracking-widest group"
+                            className="text-xs font-bold text-muted-foreground/60 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1.5 uppercase tracking-widest group"
                         >
                             <ChevronRight className="w-3 h-3 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
                             Back to website
@@ -171,14 +171,14 @@ export default function Register() {
                     </div>
 
                     <div className="space-y-2">
-                        <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight">Create account</h2>
+                        <h2 className="text-4xl font-serif font-black text-foreground tracking-tight">Create account</h2>
                         <p className="text-muted-foreground font-medium">Join the asset management network.</p>
                     </div>
 
                     {/* Progress Indicator */}
-                    <div className="flex gap-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex gap-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <motion.div 
-                            className="h-full bg-[#064e3b] rounded-full"
+                            className="h-full bg-emerald-700 dark:bg-emerald-500 rounded-full"
                             initial={{ width: "50%" }}
                             animate={{ width: currentStep === 1 ? "50%" : "100%" }}
                             transition={{ duration: 0.5, ease: "circOut" }}
@@ -196,7 +196,7 @@ export default function Register() {
                                     className="space-y-6"
                                 >
                                     <div className="space-y-3">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Primary Role</Label>
+                                        <Label className="text-sm font-bold text-foreground ml-1">Primary Role</Label>
                                         <div className="grid gap-3">
                                             {[
                                                 { id: 'teacher', label: 'Teacher', desc: 'Report damages & track school assets.', icon: UserCircle },
@@ -208,21 +208,21 @@ export default function Register() {
                                                     onClick={() => setFormData({...formData, role: role.id})}
                                                     className={`group flex items-center p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
                                                         formData.role === role.id 
-                                                        ? 'border-[#064e3b] bg-emerald-50/30' 
-                                                        : 'border-gray-100 bg-white hover:border-emerald-200'
+                                                        ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10' 
+                                                        : 'border-border bg-card hover:border-emerald-500/30'
                                                     }`}
                                                 >
                                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 transition-all ${
-                                                        formData.role === role.id ? 'bg-[#064e3b] text-white shadow-lg' : 'bg-gray-50 text-gray-400'
+                                                        formData.role === role.id ? 'bg-emerald-900 dark:bg-emerald-800 text-white shadow-lg' : 'bg-muted text-muted-foreground'
                                                     }`}>
                                                         <role.icon className="w-6 h-6" />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <p className={`font-bold ${formData.role === role.id ? 'text-[#064e3b]' : 'text-gray-900'}`}>{role.label}</p>
-                                                        <p className="text-xs text-gray-500 font-medium">{role.desc}</p>
+                                                        <p className={`font-bold ${formData.role === role.id ? 'text-emerald-700 dark:text-emerald-400' : 'text-foreground'}`}>{role.label}</p>
+                                                        <p className="text-xs text-muted-foreground font-medium">{role.desc}</p>
                                                     </div>
                                                     {formData.role === role.id && (
-                                                        <CheckCircle2 size={18} className="text-[#064e3b]" />
+                                                        <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
                                                     )}
                                                 </button>
                                             ))}
@@ -231,10 +231,10 @@ export default function Register() {
 
                                     <div className={`grid ${formData.role === 'teacher' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Employee ID</Label>
+                                            <Label className="text-sm font-bold text-foreground ml-1">Employee ID</Label>
                                             <Input 
                                                 placeholder="ID Number" 
-                                                className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium shadow-sm"
+                                                className="h-12 border-border bg-card rounded-xl px-4 focus-visible:ring-emerald-600 font-medium shadow-sm transition-all"
                                                 value={formData.employeeId}
                                                 onChange={e => setFormData({...formData, employeeId: e.target.value})}
                                             />
@@ -242,10 +242,10 @@ export default function Register() {
                                         
                                         {formData.role === 'teacher' && (
                                             <div className="space-y-2 animate-in fade-in slide-in-from-right-4 duration-300">
-                                                <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Department</Label>
+                                                <Label className="text-sm font-bold text-foreground ml-1">Department</Label>
                                                 <div className="relative group">
                                                     <select 
-                                                        className="flex h-12 w-full border border-gray-200 bg-white px-4 py-2 text-base font-medium focus:ring-2 focus:ring-[#064e3b] focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-gray-300 shadow-sm"
+                                                        className="flex h-12 w-full border border-border bg-card px-4 py-2 text-base font-medium focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-emerald-500/50 shadow-sm"
                                                         value={formData.department}
                                                         onChange={e => setFormData({...formData, department: e.target.value})}
                                                         required
@@ -263,7 +263,7 @@ export default function Register() {
                                                         <option value="SPED">SPED</option>
                                                         <option value="Administrative">Administrative Office</option>
                                                     </select>
-                                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-[#064e3b] transition-colors" />
+                                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none group-hover:text-emerald-600 transition-colors" />
                                                 </div>
                                             </div>
                                         )}
@@ -272,7 +272,7 @@ export default function Register() {
                                     <Button 
                                         type="button" 
                                         onClick={handleNext}
-                                        className="w-full h-11 bg-[#8eb2a6] hover:bg-[#7da195] text-white rounded-xl font-bold transition-all shadow-sm active:scale-[0.98] gap-2"
+                                        className="w-full h-11 bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-sm active:scale-[0.98] gap-2"
                                     >
                                         Next Step <ChevronRight className="w-4 h-4" />
                                     </Button>
@@ -286,12 +286,12 @@ export default function Register() {
                                     className="space-y-5"
                                 >
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Personal Details</Label>
+                                        <Label className="text-sm font-bold text-foreground ml-1">Personal Details</Label>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Input 
                                                     placeholder="First Name" 
-                                                    className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium"
+                                                    className="h-12 border-border bg-card rounded-xl px-4 focus-visible:ring-emerald-600 font-medium"
                                                     value={formData.firstName}
                                                     onChange={e => setFormData({...formData, firstName: e.target.value})}
                                                     required
@@ -300,7 +300,7 @@ export default function Register() {
                                             <div className="space-y-2">
                                                 <Input 
                                                     placeholder="Last Name" 
-                                                    className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium"
+                                                    className="h-12 border-border bg-card rounded-xl px-4 focus-visible:ring-[#064e3b] font-medium"
                                                     value={formData.lastName}
                                                     onChange={e => setFormData({...formData, lastName: e.target.value})}
                                                     required
@@ -310,13 +310,13 @@ export default function Register() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Email</Label>
+                                        <Label className="text-sm font-bold text-foreground ml-1">Email</Label>
                                         <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                                             <Input 
                                                 type="email" 
                                                 placeholder="email@school.edu.ph" 
-                                                className="h-12 border-gray-200 rounded-xl pl-11 pr-4 focus-visible:ring-[#064e3b] font-medium"
+                                                className="h-12 border-border bg-card rounded-xl pl-11 pr-4 focus-visible:ring-emerald-600 font-medium"
                                                 value={formData.email}
                                                 onChange={e => setFormData({...formData, email: e.target.value})}
                                                 required
@@ -325,13 +325,13 @@ export default function Register() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Phone Number</Label>
+                                        <Label className="text-sm font-bold text-foreground ml-1">Phone Number</Label>
                                         <div className="relative">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                                             <Input 
                                                 type="tel"
                                                 placeholder="09XX XXX XXXX" 
-                                                className="h-12 border-gray-200 rounded-xl pl-11 focus-visible:ring-[#064e3b] font-medium"
+                                                className="h-12 border-border bg-card rounded-xl pl-11 focus-visible:ring-emerald-600 font-medium"
                                                 value={formData.phone}
                                                 onChange={e => setFormData({...formData, phone: e.target.value})}
                                                 required
@@ -340,13 +340,13 @@ export default function Register() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Password</Label>
+                                        <Label className="text-sm font-bold text-foreground ml-1">Password</Label>
                                         <div className="relative">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                                             <Input 
                                                 type={showPassword ? "text" : "password"} 
                                                 placeholder="••••••••" 
-                                                className="h-12 border-gray-200 rounded-xl pl-11 pr-12 focus-visible:ring-[#064e3b] font-medium"
+                                                className="h-12 border-border bg-card rounded-xl pl-11 pr-12 focus-visible:ring-emerald-600 font-medium"
                                                 value={formData.password}
                                                 onChange={e => setFormData({...formData, password: e.target.value})}
                                                 required
@@ -366,14 +366,14 @@ export default function Register() {
                                             type="button" 
                                             variant="outline"
                                             onClick={handleBack}
-                                            className="h-11 px-6 border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                                            className="h-11 px-6 border-border bg-card rounded-xl font-bold hover:bg-muted transition-all"
                                         >
                                             Back
                                         </Button>
                                         <Button 
                                             type="submit" 
                                             disabled={isLoading}
-                                            className="flex-1 h-11 bg-[#8eb2a6] hover:bg-[#7da195] text-white rounded-xl font-bold transition-all shadow-sm active:scale-[0.98]"
+                                            className="flex-1 h-11 bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-sm active:scale-[0.98]"
                                         >
                                             {isLoading ? "Creating..." : "Sign up"}
                                         </Button>
@@ -382,8 +382,8 @@ export default function Register() {
                             )}
                         </AnimatePresence>
 
-                        <p className="text-center text-sm font-medium text-gray-500 pt-4">
-                            Already have an account? <Link to="/login" className="text-[#064e3b] font-bold hover:underline ml-1">Sign in</Link>
+                        <p className="text-center text-sm font-medium text-muted-foreground pt-4">
+                            Already have an account? <Link to="/login" className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline ml-1">Sign in</Link>
                         </p>
                     </form>
                 </div>

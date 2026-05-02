@@ -47,7 +47,6 @@ export default function PrincipalDashboard() {
     }
 
     const pendingApproval = requests.filter(r => r.status === 'Pending');
-    const escalated = requests.filter(r => r.status === 'Escalated');
     const inProgress = requests.filter(r => r.status === 'In Progress');
     const completed = requests.filter(r => r.status === 'Completed');
     const scheduledToday = requests.filter(r =>
@@ -68,12 +67,12 @@ export default function PrincipalDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                     {scheduledToday.length > 0 && (
-                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-50 border border-emerald-200/60">
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
                             <span className="relative flex h-1.5 w-1.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                             </span>
-                            <span className="label-mono text-emerald-700">{scheduledToday.length} active today</span>
+                            <span className="label-mono text-emerald-700 dark:text-emerald-400">{scheduledToday.length} active today</span>
                         </div>
                     )}
                     <Link to="/repair-requests">
@@ -85,10 +84,9 @@ export default function PrincipalDashboard() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <StatsCard title="Pending" value={pendingApproval.length} subtitle="Decision required" icon={Clock} color="amber" />
                 <StatsCard title="In Progress" value={inProgress.length} subtitle="Active work orders" icon={Wrench} color="blue" />
-                <StatsCard title="Escalated" value={escalated.length} subtitle="Critical priority" icon={AlertTriangle} color="red" />
                 <StatsCard title="Resolved" value={completed.length} subtitle="Completed repairs" icon={CheckCircle} color="teal" />
             </div>
 
@@ -145,7 +143,6 @@ export default function PrincipalDashboard() {
                                 { label: 'Auth Required', count: pendingApproval.length, color: 'bg-amber-500' },
                                 { label: 'Operational', count: inProgress.length, color: 'bg-sky-500' },
                                 { label: 'Resolved', count: completed.length, color: 'bg-emerald-500' },
-                                { label: 'Escalated', count: escalated.length, color: 'bg-rose-500' },
                             ].map(({ label, count, color }) => (
                                 <div key={label}>
                                     <div className="flex justify-between mb-1.5">

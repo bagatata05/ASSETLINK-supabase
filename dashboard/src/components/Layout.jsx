@@ -177,12 +177,12 @@ export default function Layout() {
                     {/* Right Controls */}
                     <div className="flex items-center gap-2">
                         {/* Live Status */}
-                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-50 border border-emerald-200/60 text-emerald-700">
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
                             <span className="relative flex h-1.5 w-1.5">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                             </span>
-                            <span className="label-mono text-emerald-700 text-[10px]">Operational</span>
+                            <span className="label-mono text-[10px]">Operational</span>
                         </div>
                         <ThemeToggle />
                     </div>

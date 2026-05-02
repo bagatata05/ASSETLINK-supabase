@@ -91,7 +91,7 @@ export default function UserApprovals() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                         <Input 
                             placeholder="Search requests..." 
-                            className="pl-9 h-8 w-full sm:w-[240px] bg-white border-border text-xs focus-visible:ring-primary/50"
+                            className="pl-9 h-8 w-full sm:w-[240px] bg-card border-border text-xs focus-visible:ring-primary/50"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                         />
@@ -163,7 +163,11 @@ export default function UserApprovals() {
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className={`inline-flex w-fit px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                                                    user.role === 'teacher' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'
+                                                    user.role === 'teacher' 
+                                                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' 
+                                                        : user.role === 'maintenance'
+                                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                                                            : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
                                                 }`}>
                                                     {user.role}
                                                 </span>
@@ -184,7 +188,7 @@ export default function UserApprovals() {
                                                     onClick={() => handleApproval(user.id, false)}
                                                     variant="ghost" 
                                                     size="sm"
-                                                    className="w-8 h-8 p-0 rounded-lg hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                                                    className="w-8 h-8 p-0 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                                                 >
                                                     <UserX className="w-4 h-4" />
                                                 </Button>

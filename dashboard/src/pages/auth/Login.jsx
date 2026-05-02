@@ -96,21 +96,21 @@ export default function Login() {
     };
 
     return (
-        <div className="h-screen grid lg:grid-cols-2 font-sans bg-white overflow-hidden">
+        <div className="h-screen grid lg:grid-cols-2 font-sans bg-background overflow-hidden transition-colors duration-300">
             {/* Left Side: Form */}
             <div className="flex flex-col items-center justify-center px-8 py-6 lg:px-20 animate-fade-in relative">
                 <div className="w-full max-w-[400px] space-y-8">
                     {/* Logo & Back Link */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#064e3b] text-white rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
+                            <div className="w-10 h-10 bg-emerald-900 dark:bg-emerald-800 text-white rounded-lg flex items-center justify-center shadow-lg transform -rotate-3 transition-colors">
                                 <QrCode className="w-6 h-6" />
                             </div>
-                            <h1 className="text-2xl font-serif font-black text-[#064e3b] tracking-tight">AssetLink</h1>
+                            <h1 className="text-2xl font-serif font-black text-emerald-900 dark:text-emerald-400 tracking-tight transition-colors">AssetLink</h1>
                         </div>
                         <a 
                             href={import.meta.env.VITE_LANDING_PAGE_URL || "http://localhost:3000"} 
-                            className="text-xs font-bold text-gray-400 hover:text-[#064e3b] transition-colors flex items-center gap-1.5 uppercase tracking-widest group"
+                            className="text-xs font-bold text-muted-foreground/60 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors flex items-center gap-1.5 uppercase tracking-widest group"
                         >
                             <ChevronRight className="w-3 h-3 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
                             Back to website
@@ -118,17 +118,17 @@ export default function Login() {
                     </div>
 
                     <div className="space-y-2">
-                        <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight">Log in</h2>
+                        <h2 className="text-4xl font-serif font-black text-foreground tracking-tight transition-colors">Log in</h2>
                         <p className="text-muted-foreground font-medium">Welcome back! Please enter your details.</p>
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Email</Label>
+                            <Label className="text-sm font-bold text-foreground/80 ml-1 transition-colors">Email</Label>
                             <Input 
                                 type="email" 
-                                placeholder="naphiera@gmail.com" 
-                                className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] text-base font-medium"
+                                placeholder="name@school.edu" 
+                                className="h-12 bg-card border-border rounded-xl px-4 focus-visible:ring-emerald-600 transition-all text-base font-medium"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -137,11 +137,11 @@ export default function Login() {
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between px-1">
-                                <Label className="text-sm font-bold text-[#1a1a1a]">Password</Label>
+                                <Label className="text-sm font-bold text-foreground/80 transition-colors">Password</Label>
                                 <button 
                                     type="button" 
                                     onClick={() => setShowForgotModal(true)}
-                                    className="text-xs font-bold text-[#064e3b] hover:underline uppercase tracking-wider"
+                                    className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline uppercase tracking-wider transition-colors"
                                 >
                                     Forgot password
                                 </button>
@@ -150,7 +150,7 @@ export default function Login() {
                                 <Input 
                                     type={showPassword ? "text" : "password"} 
                                     placeholder="••••••••" 
-                                    className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] pr-12 text-base font-medium"
+                                    className="h-12 bg-card border-border rounded-xl px-4 focus-visible:ring-emerald-600 pr-12 text-base font-medium transition-all"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -158,7 +158,7 @@ export default function Login() {
                                 <button 
                                     type="button" 
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -169,10 +169,10 @@ export default function Login() {
                             <input 
                                 type="checkbox"
                                 id="remember" 
-                                className="h-4 w-4 rounded border-gray-300 text-[#064e3b] focus:ring-[#064e3b] accent-[#064e3b]" 
+                                className="h-4 w-4 rounded border-input text-emerald-600 focus:ring-emerald-600 accent-emerald-600" 
                             />
-                            <label htmlFor="remember" className="text-sm font-medium text-gray-500 leading-none cursor-pointer">
-                                Remember for 30 days
+                            <label htmlFor="remember" className="text-sm font-medium text-muted-foreground leading-none cursor-pointer">
+                                Remember this device
                             </label>
                         </div>
 
@@ -180,7 +180,7 @@ export default function Login() {
                             <Button 
                                 type="submit" 
                                 disabled={isLoading}
-                                className="w-full h-11 bg-[#8eb2a6] hover:bg-[#7da195] text-white rounded-xl font-bold transition-all text-base shadow-sm active:scale-[0.98]"
+                                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white rounded-xl font-bold transition-all text-base shadow-sm active:scale-[0.98]"
                             >
                                 {isLoading ? "Signing in..." : "Sign in"}
                             </Button>
@@ -189,7 +189,7 @@ export default function Login() {
                                 variant="outline" 
                                 type="button"
                                 onClick={handleGoogleLogin}
-                                className="w-full h-11 border-gray-200 rounded-xl font-bold flex items-center justify-center gap-3 text-gray-700 hover:bg-gray-50 transition-all active:scale-[0.98]"
+                                className="w-full h-11 bg-card border-border rounded-xl font-bold flex items-center justify-center gap-3 text-foreground hover:bg-muted transition-all active:scale-[0.98]"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -201,8 +201,8 @@ export default function Login() {
                             </Button>
                         </div>
 
-                        <p className="text-center text-sm font-medium text-gray-500 pt-4">
-                            Don't have an account? <Link to="/register" className="text-[#064e3b] font-bold hover:underline ml-1">Sign up</Link>
+                        <p className="text-center text-sm font-medium text-muted-foreground pt-4">
+                            Don't have an account? <Link to="/register" className="text-emerald-700 dark:text-emerald-400 font-bold hover:underline ml-1">Sign up</Link>
                         </p>
                     </form>
                 </div>
@@ -272,35 +272,35 @@ export default function Login() {
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-[2rem] shadow-2xl w-full max-w-[440px] overflow-hidden"
+                        className="bg-card border border-border rounded-[2rem] shadow-2xl w-full max-w-[440px] overflow-hidden"
                     >
                         <div className="p-8 space-y-6">
                             <div className="flex justify-between items-start">
-                                <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-[#064e3b]">
+                                <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                                     <Mail className="w-6 h-6" />
                                 </div>
                                 <button 
                                     onClick={() => setShowForgotModal(false)}
-                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+                                    className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
 
                             <div className="space-y-2">
-                                <h3 className="text-2xl font-serif font-black text-gray-900">Reset your password</h3>
-                                <p className="text-sm font-medium text-gray-500 leading-relaxed">
+                                <h3 className="text-2xl font-serif font-black text-foreground">Reset your password</h3>
+                                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                                     No worries! Enter your institutional email and we'll send you a secure link to reset your account credentials.
                                 </p>
                             </div>
 
                             <form onSubmit={handleResetRequest} className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs font-bold text-gray-700 ml-1">Account Email</Label>
+                                    <Label className="text-xs font-bold text-muted-foreground ml-1">Account Email</Label>
                                     <Input 
                                         type="email" 
                                         placeholder="Enter your email" 
-                                        className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b]"
+                                        className="h-12 bg-muted/50 border-border rounded-xl px-4 focus-visible:ring-emerald-600"
                                         value={forgotEmail}
                                         onChange={(e) => setForgotEmail(e.target.value)}
                                         required
@@ -308,7 +308,7 @@ export default function Login() {
                                 </div>
                                 <Button 
                                     disabled={isResetting}
-                                    className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl font-bold transition-all text-base shadow-lg shadow-emerald-900/10"
+                                    className="w-full h-12 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl font-bold transition-all text-base shadow-lg shadow-emerald-900/10"
                                 >
                                     {isResetting ? "Sending..." : "Send Reset Link"}
                                 </Button>

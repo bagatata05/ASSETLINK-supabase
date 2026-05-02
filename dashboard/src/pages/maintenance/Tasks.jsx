@@ -34,7 +34,7 @@ export default function Tasks() {
         const fetchTasks = async () => {
             const { data, error } = await supabase
                 .from('maintenance_tasks')
-                .select('*')
+                .select('*, repair_requests(teacher_verification_notes)')
                 .order('created_at', { ascending: false });
 
             if (!error && data) {
@@ -225,13 +225,13 @@ export default function Tasks() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input 
                         placeholder="Filter by asset, school, or request number..." 
-                        className="pl-9 h-9 bg-white border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" 
+                        className="pl-9 h-9 bg-card border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" 
                         value={search} 
                         onChange={e => setSearch(e.target.value)} 
                     />
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white text-sm">
+                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-card text-sm">
                         <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
@@ -315,6 +315,19 @@ export default function Tasks() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {selected.repair_requests?.teacher_verification_notes && (
+                                        <div className="space-y-3 pb-2">
+                                            <Label className="text-[10px] uppercase tracking-widest text-rose-600 font-bold flex items-center gap-2">
+                                                <AlertCircle className="w-3 h-3" /> Teacher Rework Feedback
+                                            </Label>
+                                            <div className="bg-rose-500/5 border border-rose-500/20 p-4 rounded-xl shadow-sm">
+                                                <p className="text-sm text-rose-700 leading-relaxed italic">
+                                                    "{selected.repair_requests.teacher_verification_notes}"
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {selected.photo_url && (
                                         <div className="space-y-3">

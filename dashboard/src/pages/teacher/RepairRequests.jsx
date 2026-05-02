@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-const STATUSES = ['Pending', 'Approved', 'In Progress', 'Completed', 'Rejected', 'Escalated', 'Pending Teacher Verification'];
+const STATUSES = ['Pending', 'Approved', 'In Progress', 'Completed', 'Rejected', 'Pending Teacher Verification'];
 
 export default function TeacherRepairRequests() {
     const { currentUser } = useAuth();
@@ -129,7 +129,6 @@ export default function TeacherRepairRequests() {
                 .from('maintenance_tasks')
                 .update({
                     status: 'In Progress',
-                    maintenance_notes: `REWORK REQUESTED: ${verificationFeedback}`, 
                     updated_at: new Date().toISOString()
                 })
                 .eq('repair_request_id', selected.id);
@@ -168,13 +167,13 @@ export default function TeacherRepairRequests() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input 
                         placeholder="Scan reports by asset designation..." 
-                        className="pl-9 h-9 bg-white border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" 
+                        className="pl-9 h-9 bg-card border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" 
                         value={search} 
                         onChange={e => setSearch(e.target.value)} 
                     />
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white text-sm">
+                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-card text-sm">
                         <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
@@ -348,19 +347,34 @@ export default function TeacherRepairRequests() {
                                     </div>
 
                                     {/* Maintenance Progress Notes */}
-                                    {selected.maintenance_notes && (
-                                        <div className="space-y-3 pt-2">
-                                            <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Maintenance Progress</Label>
-                                            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
-                                                <p className="text-xs text-primary leading-relaxed">
-                                                    {selected.maintenance_notes}
-                                                </p>
-                                                
-                                                <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-between text-[10px] font-bold text-primary/80">
-                                                    <span className="flex items-center gap-1"><Wrench className="w-3 h-3" /> TECHNICIAN UPDATE</span>
-                                                    <span>COST: ₱{selected.actual_cost?.toLocaleString() || '0'}</span>
+                                    {(selected.maintenance_notes || selected.teacher_verification_notes) && (
+                                        <div className="space-y-4 pt-2">
+                                            {selected.teacher_verification_notes && (
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] uppercase tracking-widest font-bold text-rose-600">Your Rework Feedback</Label>
+                                                    <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl">
+                                                        <p className="text-xs text-rose-700 leading-relaxed italic">
+                                                            "{selected.teacher_verification_notes}"
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
+
+                                            {selected.maintenance_notes && (
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Maintenance Progress</Label>
+                                                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+                                                        <p className="text-xs text-primary leading-relaxed">
+                                                            {selected.maintenance_notes}
+                                                        </p>
+                                                        
+                                                        <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-between text-[10px] font-bold text-primary/80">
+                                                            <span className="flex items-center gap-1"><Wrench className="w-3 h-3" /> TECHNICIAN UPDATE</span>
+                                                            <span>COST: ₱{selected.actual_cost?.toLocaleString() || '0'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -398,7 +412,7 @@ export default function TeacherRepairRequests() {
                                     {/* Final QR Code Report */}
                                     {selected.status === 'Completed' && (
                                         <div className="pt-4 animate-in zoom-in-95">
-                                            <div className="p-6 bg-white border border-border/80 rounded-3xl shadow-sm flex flex-col items-center gap-4 group">
+                                            <div className="p-6 bg-card border border-border/80 rounded-3xl shadow-sm flex flex-col items-center gap-4 group">
                                                 <div className="p-2 border-2 border-primary/10 rounded-2xl group-hover:border-primary/30 transition-colors">
                                                     <img
                                                         src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/repair-report?id=${selected.id}`)}&margin=8`}

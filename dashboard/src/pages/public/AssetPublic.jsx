@@ -66,15 +66,15 @@ export default function AssetPublic() {
     };
 
     if (loading) return (
-        <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center justify-center min-h-[60vh] bg-background transition-colors duration-300">
             <div className="w-12 h-12 border-8 border-primary/10 border-t-primary rounded-full animate-spin" />
         </div>
     );
 
     if (notFound) return (
-        <div className="flex items-center justify-center min-h-[60vh] text-center p-10 animate-in fade-in zoom-in duration-500">
-            <div className="bg-white rounded-[3rem] p-16 shadow-2xl shadow-black/5 border border-border/40 max-w-md w-full">
-                <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-border/50">
+        <div className="flex items-center justify-center min-h-[60vh] text-center p-10 bg-background transition-colors duration-300 animate-in fade-in zoom-in duration-500">
+            <div className="bg-card rounded-[3rem] p-16 shadow-2xl shadow-black/5 border border-border/40 max-w-md w-full">
+                <div className="w-24 h-24 bg-muted rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-border/50">
                     <Package className="w-12 h-12 text-muted-foreground/20" />
                 </div>
                 <h2 className="text-3xl font-serif font-black text-foreground tracking-tighter">Asset Not <span className="text-primary italic">Found</span></h2>
@@ -89,7 +89,7 @@ export default function AssetPublic() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="max-w-2xl mx-auto space-y-6 pb-20 px-4 relative z-10"
+            className="max-w-2xl mx-auto space-y-6 pb-20 px-4 relative z-10 transition-colors duration-300"
         >
             {/* Simple Header */}
             <motion.div variants={itemVariants} className="flex items-center justify-between pt-6">

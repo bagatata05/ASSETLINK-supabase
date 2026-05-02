@@ -89,9 +89,9 @@ export default function MaintenanceDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                     {overdueTasks.length > 0 && (
-                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-rose-50 border border-rose-200/60">
-                            <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                            <span className="label-mono text-rose-600">{overdueTasks.length} overdue</span>
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-rose-50 dark:bg-rose-500/10 border border-rose-200/60 dark:border-rose-500/20">
+                            <AlertTriangle className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
+                            <span className="label-mono text-rose-600 dark:text-rose-400">{overdueTasks.length} overdue</span>
                         </div>
                     )}
                     <Link to="/tasks">

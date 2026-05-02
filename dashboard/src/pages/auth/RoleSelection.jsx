@@ -93,22 +93,22 @@ export default function RoleSelection() {
     };
 
     return (
-        <div className="h-screen grid lg:grid-cols-2 bg-white selection:bg-emerald-100 overflow-hidden">
+        <div className="h-screen grid lg:grid-cols-2 bg-background selection:bg-emerald-100/30 overflow-hidden transition-colors duration-300">
             {/* Left Side: Multi-Step Form */}
             <div className="flex flex-col items-center justify-center px-8 py-6 lg:px-20 animate-fade-in relative overflow-y-auto">
                 <div className="w-full max-w-[480px] space-y-8">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#064e3b] text-white rounded-lg flex items-center justify-center shadow-lg transform rotate-3">
+                        <div className="w-10 h-10 bg-emerald-900 dark:bg-emerald-800 text-white rounded-lg flex items-center justify-center shadow-lg transform rotate-3 transition-colors">
                             <QrCode className="w-6 h-6" />
                         </div>
-                        <h1 className="text-2xl font-serif font-black text-[#064e3b] tracking-tight">AssetLink</h1>
+                        <h1 className="text-2xl font-serif font-black text-emerald-900 dark:text-emerald-400 tracking-tight transition-colors">AssetLink</h1>
                     </div>
 
                     {/* Progress Indicator */}
-                    <div className="flex gap-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className="flex gap-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <motion.div 
-                            className="h-full bg-[#064e3b] rounded-full"
+                            className="h-full bg-emerald-700 dark:bg-emerald-500 rounded-full"
                             initial={{ width: "50%" }}
                             animate={{ width: currentStep === 1 ? "50%" : "100%" }}
                             transition={{ duration: 0.5, ease: "circOut" }}
@@ -125,10 +125,10 @@ export default function RoleSelection() {
                                 className="space-y-8"
                             >
                                 <div className="space-y-3">
-                                    <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight leading-tight">
-                                        Choose your <span className="text-[#064e3b] italic underline decoration-emerald-200">role.</span>
+                                    <h2 className="text-4xl font-serif font-black text-foreground tracking-tight leading-tight transition-colors">
+                                        Choose your <span className="text-emerald-700 dark:text-emerald-400 italic underline decoration-emerald-200">role.</span>
                                     </h2>
-                                    <p className="text-gray-500 font-medium text-lg">
+                                    <p className="text-muted-foreground font-medium text-lg">
                                         Select your primary role to configure your permissions and dashboard.
                                     </p>
                                 </div>
@@ -140,21 +140,21 @@ export default function RoleSelection() {
                                             onClick={() => setSelectedRole(role.id)}
                                             className={`group flex items-center p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
                                                 selectedRole === role.id 
-                                                ? 'border-[#064e3b] bg-emerald-50/30 ring-4 ring-emerald-500/5' 
-                                                : 'border-gray-100 bg-white hover:border-emerald-200 hover:bg-gray-50/50'
+                                                ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50/30 dark:bg-emerald-500/10 ring-4 ring-emerald-500/5' 
+                                                : 'border-border bg-card hover:border-emerald-200 hover:bg-muted/50'
                                             }`}
                                         >
                                             <div className={`w-14 h-14 rounded-xl flex items-center justify-center mr-5 transition-all ${
-                                                selectedRole === role.id ? 'bg-[#064e3b] text-white shadow-lg' : 'bg-gray-50 text-gray-400'
+                                                selectedRole === role.id ? 'bg-emerald-700 dark:bg-emerald-600 text-white shadow-lg' : 'bg-muted text-muted-foreground'
                                             }`}>
                                                 <role.icon className="w-8 h-8" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className={`text-lg font-bold ${selectedRole === role.id ? 'text-[#064e3b]' : 'text-gray-900'}`}>{role.label}</p>
-                                                <p className="text-sm text-gray-500 font-medium">{role.desc}</p>
+                                                <p className={`text-lg font-bold transition-colors ${selectedRole === role.id ? 'text-emerald-700 dark:text-emerald-400' : 'text-foreground'}`}>{role.label}</p>
+                                                <p className="text-sm text-muted-foreground font-medium">{role.desc}</p>
                                             </div>
                                             {selectedRole === role.id && (
-                                                <div className="w-6 h-6 bg-[#064e3b] text-white rounded-full flex items-center justify-center shadow-md">
+                                                <div className="w-6 h-6 bg-emerald-600 dark:bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-md transition-all">
                                                     <CheckCircle2 size={14} />
                                                 </div>
                                             )}
@@ -165,7 +165,7 @@ export default function RoleSelection() {
                                 <Button 
                                     onClick={handleNextStep}
                                     disabled={!selectedRole}
-                                    className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98]"
+                                    className="w-full h-12 bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98]"
                                 >
                                     Next Step <ChevronRight className="w-5 h-5" />
                                 </Button>
@@ -183,24 +183,24 @@ export default function RoleSelection() {
                                     <button 
                                         type="button" 
                                         onClick={handleBackStep}
-                                        className="flex items-center gap-2 text-sm font-bold text-[#064e3b] hover:opacity-70 transition-opacity uppercase tracking-widest"
+                                        className="flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:opacity-70 transition-opacity uppercase tracking-widest"
                                     >
                                         <ArrowLeft size={14} /> Back to roles
                                     </button>
-                                    <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight leading-tight">
-                                        Professional <span className="text-[#064e3b] italic underline decoration-emerald-200">Details.</span>
+                                    <h2 className="text-4xl font-serif font-black text-foreground tracking-tight leading-tight transition-colors">
+                                        Professional <span className="text-emerald-700 dark:text-emerald-400 italic underline decoration-emerald-200">Details.</span>
                                     </h2>
-                                    <p className="text-gray-500 font-medium">Please provide your school credentials to continue.</p>
+                                    <p className="text-muted-foreground font-medium">Please provide your school credentials to continue.</p>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Employee ID</Label>
+                                        <Label className="text-sm font-bold text-foreground/80 ml-1 transition-colors">Employee ID</Label>
                                         <div className="relative">
-                                            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                             <Input 
                                                 placeholder="Enter your ID Number" 
-                                                className="h-12 border-gray-200 rounded-xl pl-11 focus:ring-[#064e3b] font-medium shadow-sm"
+                                                className="h-12 bg-card border-border rounded-xl pl-11 focus-visible:ring-emerald-600 font-medium shadow-sm transition-all"
                                                 value={details.employeeId}
                                                 onChange={e => setDetails({...details, employeeId: e.target.value})}
                                                 required
@@ -210,10 +210,10 @@ export default function RoleSelection() {
 
                                     {selectedRole === 'teacher' ? (
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Department</Label>
+                                            <Label className="text-sm font-bold text-foreground/80 ml-1 transition-colors">Department</Label>
                                             <div className="relative group">
                                                 <select 
-                                                    className="flex h-12 w-full border border-gray-200 bg-white px-4 py-2 text-base font-medium focus:ring-2 focus:ring-[#064e3b] focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-gray-300 shadow-sm"
+                                                    className="flex h-12 w-full border border-border bg-card px-4 py-2 text-base font-medium focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none rounded-xl appearance-none cursor-pointer transition-all pr-10 hover:border-emerald-500/50 shadow-sm"
                                                     value={details.department}
                                                     onChange={e => setDetails({...details, department: e.target.value})}
                                                     required
@@ -236,10 +236,10 @@ export default function RoleSelection() {
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Specialization</Label>
+                                            <Label className="text-sm font-bold text-foreground/80 ml-1 transition-colors">Specialization</Label>
                                             <Input 
                                                 placeholder="e.g. Electrical, Plumbing, IT" 
-                                                className="h-12 border-gray-200 rounded-xl px-4 focus:ring-[#064e3b] font-medium shadow-sm"
+                                                className="h-12 bg-card border-border rounded-xl px-4 focus-visible:ring-emerald-600 font-medium shadow-sm transition-all"
                                                 value={details.specialization}
                                                 onChange={e => setDetails({...details, specialization: e.target.value})}
                                                 required
@@ -248,13 +248,13 @@ export default function RoleSelection() {
                                     )}
 
                                     <div className="space-y-2">
-                                        <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Phone Number</Label>
+                                        <Label className="text-sm font-bold text-foreground/80 ml-1 transition-colors">Phone Number</Label>
                                         <div className="relative">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                             <Input 
                                                 type="tel"
                                                 placeholder="09XX XXX XXXX" 
-                                                className="h-12 border-gray-200 rounded-xl pl-11 focus:ring-[#064e3b] font-medium shadow-sm"
+                                                className="h-12 bg-card border-border rounded-xl pl-11 focus-visible:ring-emerald-600 font-medium shadow-sm transition-all"
                                                 value={details.phone}
                                                 onChange={e => setDetails({...details, phone: e.target.value})}
                                                 required
@@ -266,7 +266,7 @@ export default function RoleSelection() {
                                 <Button 
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98]"
+                                    className="w-full h-12 bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white rounded-xl gap-3 font-bold text-lg shadow-xl shadow-emerald-900/10 transition-all active:scale-[0.98]"
                                 >
                                     {isLoading ? 'Saving Details...' : 'Initialize Dashboard'} <ChevronRight className="w-5 h-5" />
                                 </Button>
@@ -274,13 +274,13 @@ export default function RoleSelection() {
                         )}
                     </AnimatePresence>
 
-                    <div className="pt-4 text-center border-t border-gray-100">
+                    <div className="pt-4 text-center border-t border-border">
                         <button 
                             onClick={() => {
                                 supabase.auth.signOut();
                                 window.location.href = '/login';
                             }}
-                            className="text-xs font-bold text-gray-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+                            className="text-xs font-bold text-muted-foreground hover:text-red-500 uppercase tracking-widest transition-colors"
                         >
                             Sign out and switch account
                         </button>

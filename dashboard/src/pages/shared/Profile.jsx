@@ -114,7 +114,7 @@ export default function Profile() {
                     variant="ghost" 
                     size="sm" 
                     onClick={logout} 
-                    className="h-8 px-3 text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg gap-2"
+                    className="h-8 px-3 text-xs font-medium text-destructive hover:text-destructive/80 hover:bg-destructive/5 rounded-lg gap-2"
                 >
                     <LogOut className="w-3.5 h-3.5" />
                     Logout
@@ -125,7 +125,7 @@ export default function Profile() {
                 {/* Profile Card */}
                 <div className="bg-card border border-border rounded-xl p-6 text-center space-y-4">
                     <div className="relative inline-block">
-                        <div className="w-20 h-20 rounded-full bg-emerald-50 text-[#064e3b] flex items-center justify-center text-2xl font-bold border border-emerald-100 mx-auto overflow-hidden">
+                        <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-bold border border-primary/20 mx-auto overflow-hidden">
                             {currentUser.user_metadata?.avatar_url ? (
                                 <img 
                                     src={currentUser.user_metadata.avatar_url} 
@@ -137,13 +137,13 @@ export default function Profile() {
                                 (currentUser.full_name?.[0] || currentUser.email?.[0] || 'U').toUpperCase()
                             )}
                         </div>
-                        <button className="absolute bottom-0 right-0 p-1.5 bg-[#064e3b] text-white rounded-full shadow-lg border-2 border-white">
+                        <button className="absolute bottom-0 right-0 p-1.5 bg-primary text-primary-foreground rounded-full shadow-lg border-2 border-background">
                             <Camera className="w-3 h-3" />
                         </button>
                     </div>
                     <div>
                         <h2 className="text-lg font-bold text-foreground">{currentUser.full_name}</h2>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 mt-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-primary/10 text-primary border border-primary/20 mt-1">
                             {currentUser.role}
                         </span>
                     </div>
@@ -154,7 +154,7 @@ export default function Profile() {
                                 type="button"
                                 variant="outline" 
                                 onClick={handleSetPassword}
-                                className="w-full h-9 text-[11px] font-bold uppercase tracking-wider border-emerald-100 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-all rounded-lg gap-2"
+                                className="w-full h-9 text-[11px] font-bold uppercase tracking-wider border-primary/20 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all rounded-lg gap-2"
                             >
                                 <Shield className="w-3.5 h-3.5" />
                                 Create Password
@@ -178,7 +178,7 @@ export default function Profile() {
                                 <Input 
                                     value={formData.first_name} 
                                     onChange={e => setFormData({...formData, first_name: e.target.value})}
-                                    className="h-10 rounded-lg border-border focus-visible:ring-[#064e3b] font-medium"
+                                    className="h-10 rounded-lg border-border focus-visible:ring-primary font-medium"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -186,7 +186,7 @@ export default function Profile() {
                                 <Input 
                                     value={formData.last_name} 
                                     onChange={e => setFormData({...formData, last_name: e.target.value})}
-                                    className="h-10 rounded-lg border-border focus-visible:ring-[#064e3b] font-medium"
+                                    className="h-10 rounded-lg border-border focus-visible:ring-primary font-medium"
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -198,7 +198,7 @@ export default function Profile() {
                                 <Input 
                                     value={formData.phone_number} 
                                     onChange={e => setFormData({...formData, phone_number: e.target.value})}
-                                    className="h-10 rounded-lg border-border focus-visible:ring-[#064e3b] font-medium"
+                                    className="h-10 rounded-lg border-border focus-visible:ring-primary font-medium"
                                 />
                             </div>
 
@@ -207,7 +207,7 @@ export default function Profile() {
                                 <Input 
                                     value={formData.employee_id} 
                                     onChange={e => setFormData({...formData, employee_id: e.target.value})}
-                                    className="h-10 rounded-lg border-border focus-visible:ring-[#064e3b] font-medium"
+                                    className="h-10 rounded-lg border-border focus-visible:ring-primary font-medium"
                                     placeholder="Enter ID Number"
                                 />
                             </div>
@@ -241,7 +241,7 @@ export default function Profile() {
                             <Button 
                                 type="submit" 
                                 disabled={isLoading}
-                                className="h-10 px-6 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-lg font-bold gap-2 transition-all active:scale-[0.98]"
+                                className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-bold gap-2 transition-all active:scale-[0.98]"
                             >
                                 {isLoading ? 'Saving...' : 'Save Changes'} <Save className="w-4 h-4" />
                             </Button>

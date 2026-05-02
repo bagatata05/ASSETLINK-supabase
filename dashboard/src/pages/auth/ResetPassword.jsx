@@ -49,20 +49,20 @@ export default function ResetPassword() {
     };
 
     return (
-        <div className="h-screen grid lg:grid-cols-2 bg-white font-sans overflow-hidden selection:bg-emerald-100">
+        <div className="min-h-screen grid lg:grid-cols-2 bg-background font-sans overflow-hidden selection:bg-emerald-100 transition-colors duration-300">
             {/* Left Side: Reset Form */}
             <div className="flex flex-col items-center justify-center px-8 py-6 lg:px-20 animate-fade-in relative">
                 <div className="w-full max-w-[400px] space-y-8">
                     {/* Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#064e3b] text-white rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
+                        <div className="w-10 h-10 bg-emerald-900 dark:bg-emerald-800 text-white rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
                             <QrCode className="w-6 h-6" />
                         </div>
-                        <h1 className="text-2xl font-serif font-black text-[#064e3b] tracking-tight">AssetLink</h1>
+                        <h1 className="text-2xl font-serif font-black text-emerald-900 dark:text-emerald-400 tracking-tight">AssetLink</h1>
                     </div>
 
                     <div className="space-y-3">
-                        <h2 className="text-4xl font-serif font-black text-[#1a1a1a] tracking-tight">Security Update</h2>
+                        <h2 className="text-4xl font-serif font-black text-foreground tracking-tight">Security Update</h2>
                         <p className="text-muted-foreground font-medium text-lg">Set a new secure password for your account.</p>
                     </div>
 
@@ -70,14 +70,14 @@ export default function ResetPassword() {
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-emerald-50 border border-emerald-100 p-8 rounded-3xl text-center space-y-4 shadow-sm"
+                            className="bg-card border border-border p-8 rounded-3xl text-center space-y-4 shadow-sm"
                         >
-                            <div className="w-16 h-16 bg-white text-[#064e3b] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                            <div className="w-16 h-16 bg-muted text-emerald-700 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
                                 <CheckCircle2 className="w-8 h-8" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-lg font-bold text-[#064e3b]">Success!</p>
-                                <p className="text-sm text-emerald-800/60 font-medium leading-relaxed">
+                                <p className="text-lg font-bold text-foreground">Success!</p>
+                                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
                                     Your password has been updated. You'll be redirected to login shortly.
                                 </p>
                             </div>
@@ -85,12 +85,12 @@ export default function ResetPassword() {
                     ) : (
                         <form onSubmit={handleReset} className="space-y-6">
                             <div className="space-y-1.5">
-                                <Label className="text-sm font-bold text-[#1a1a1a] ml-1">New Password</Label>
+                                <Label className="text-sm font-bold text-foreground ml-1">New Password</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showPassword ? "text" : "password"} 
                                         placeholder="••••••••" 
-                                        className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] pr-12 text-base font-medium"
+                                        className="h-12 border-border bg-card rounded-xl px-4 focus-visible:ring-emerald-600 pr-12 text-base font-medium"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -98,7 +98,7 @@ export default function ResetPassword() {
                                     <button 
                                         type="button" 
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors"
                                     >
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
@@ -106,11 +106,11 @@ export default function ResetPassword() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label className="text-sm font-bold text-[#1a1a1a] ml-1">Confirm Password</Label>
+                                <Label className="text-sm font-bold text-foreground ml-1">Confirm Password</Label>
                                 <Input 
                                     type="password" 
                                     placeholder="••••••••" 
-                                    className="h-12 border-gray-200 rounded-xl px-4 focus-visible:ring-[#064e3b] text-base font-medium"
+                                    className="h-12 border-border bg-card rounded-xl px-4 focus-visible:ring-emerald-600 text-base font-medium"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
@@ -121,14 +121,14 @@ export default function ResetPassword() {
                                 <Button 
                                     type="submit" 
                                     disabled={isLoading}
-                                    className="w-full h-12 bg-[#064e3b] hover:bg-[#053e2f] text-white rounded-xl font-bold transition-all text-base shadow-xl shadow-emerald-900/10 active:scale-[0.98]"
+                                    className="w-full h-12 bg-emerald-700 dark:bg-emerald-600 hover:bg-emerald-800 dark:hover:bg-emerald-700 text-white rounded-xl font-bold transition-all text-base shadow-xl shadow-emerald-900/10 active:scale-[0.98]"
                                 >
                                     {isLoading ? "Synchronizing..." : "Update Password"}
                                 </Button>
                                 <button 
                                     type="button"
                                     onClick={() => navigate('/login')}
-                                    className="w-full text-center text-sm font-bold text-gray-400 hover:text-[#064e3b] mt-4 transition-colors"
+                                    className="w-full text-center text-sm font-bold text-muted-foreground/60 hover:text-emerald-700 dark:hover:text-emerald-400 mt-4 transition-colors"
                                 >
                                     Back to Login
                                 </button>

@@ -73,10 +73,10 @@ export default function ReportDamage() {
     }
 
     async function handleSubmit() {
-        if (!selectedAsset || !form.description) { 
+        if (!selectedAsset || !form.description || !photo) { 
             sileo.error({
                 title: 'Missing Information',
-                description: 'Please select an asset and provide a damage description before submitting.'
+                description: 'Please select an asset, provide a description, and upload an evidence photo before submitting.'
             }); 
             return; 
         }
@@ -177,11 +177,11 @@ export default function ReportDamage() {
                     <div className="bg-card border border-border rounded-xl p-5 space-y-4">
                         <div className="flex items-center justify-between">
                             <Label className="text-sm font-medium text-foreground">Evidence Photo</Label>
-                            <span className="text-xs text-muted-foreground">Optional</span>
+                            <span className="text-xs text-rose-500 font-medium">Required</span>
                         </div>
                         <div
                             onClick={() => fileRef.current && fileRef.current.click()}
-                            className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors min-h-[240px] flex flex-col items-center justify-center ${photoPreview ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/50 bg-muted/20'}`}
+                            className={`relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors min-h-[240px] flex flex-col items-center justify-center ${photoPreview ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/50 bg-muted/20'} ${!photo && !submitting ? 'border-rose-200' : ''}`}
                         >
                             {photoPreview ? (
                                 <div className="relative group w-full">
@@ -338,7 +338,7 @@ export default function ReportDamage() {
                     <div className="pt-2">
                         <Button 
                             onClick={handleSubmit} 
-                            disabled={submitting || !selectedAsset || !form.description} 
+                            disabled={submitting || !selectedAsset || !form.description || !photo} 
                             className="w-full h-10 text-sm font-medium bg-[hsl(172,75%,17%)] hover:bg-[hsl(172,75%,22%)] text-white shadow-sm transition-colors"
                         >
                             {submitting ? "Submitting..." : "Submit Damage Report"}

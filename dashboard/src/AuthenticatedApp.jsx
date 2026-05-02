@@ -42,7 +42,8 @@ import AssetPublic from './pages/public/AssetPublic';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Shield } from 'lucide-react';
+import { Shield, Clock, ShieldAlert } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const AuthenticatedApp = () => {
     const { currentUser, isLoadingAuth, logout } = useAuth();
@@ -98,40 +99,54 @@ const AuthenticatedApp = () => {
 
     // ✅ 5. LOGGED IN but PENDING APPROVAL → show waiting screen
     // 💡 Note: We allow 'principal' and 'admin' roles to bypass this so they can access the approval dashboard
-    if (currentUser && role && currentUser.status === 'pending' && role !== 'principal' && role !== 'admin') {
+    if (currentUser?.status === 'pending' && role !== 'principal' && role !== 'admin') {
         return (
-            <div className="h-screen flex flex-col items-center justify-center bg-white p-8 text-center font-sans">
-                <div className="w-full max-w-[440px] space-y-8 animate-fade-in">
-                    <div className="w-20 h-20 bg-emerald-50 text-[#064e3b] rounded-[2rem] flex items-center justify-center mx-auto shadow-xl shadow-emerald-900/5 rotate-3">
-                        <Shield className="w-10 h-10" />
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-8 font-sans relative">
+                {/* Background Decorations */}
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-50 dark:bg-emerald-500/5 rounded-full blur-[100px] -z-10" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-50 dark:bg-blue-500/5 rounded-full blur-[100px] -z-10" />
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full max-w-md text-center space-y-8 relative z-10"
+                >
+                    <div className="relative inline-block">
+                        <div className="w-24 h-24 bg-emerald-700 rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-200 dark:shadow-none transform -rotate-6 mx-auto">
+                            <Clock className="w-12 h-12 text-white" />
+                        </div>
                     </div>
-                    
+
                     <div className="space-y-3">
-                        <h1 className="text-4xl font-serif font-black text-gray-900 tracking-tight">Account Pending.</h1>
-                        <p className="text-gray-500 font-medium text-lg leading-relaxed">
-                            Your account is currently being reviewed by the Principal. We'll grant you access once your details are verified.
+                        <h2 className="text-4xl font-serif font-black text-foreground tracking-tight">
+                            Account <span className="text-emerald-700 dark:text-emerald-400 italic underline decoration-emerald-200">Pending.</span>
+                        </h2>
+                        <p className="text-muted-foreground font-medium text-lg leading-relaxed">
+                            Hello <span className="text-emerald-700 dark:text-emerald-400 font-bold">{currentUser.full_name}</span>! 
+                            Your account is currently awaiting administrator approval.
                         </p>
                     </div>
 
-                    <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 space-y-4">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Role</span>
-                            <span className="text-[#064e3b] font-black uppercase tracking-wider">{role}</span>
+                    <div className="p-6 bg-emerald-50/50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 flex items-start gap-4 text-left">
+                        <div className="w-10 h-10 bg-card rounded-xl shadow-sm flex items-center justify-center shrink-0">
+                            <ShieldAlert className="w-5 h-5 text-emerald-700" />
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Status</span>
-                            <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Awaiting Admin</span>
+                        <div>
+                            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-1">Access Restricted</p>
+                            <p className="text-sm text-emerald-700/80 dark:text-emerald-400/80 font-medium">
+                                To ensure security, the principal must verify your employee credentials before you can access the dashboard.
+                            </p>
                         </div>
                     </div>
 
                     <Button 
                         variant="ghost" 
                         onClick={logout}
-                        className="text-gray-400 hover:text-red-500 font-bold uppercase tracking-widest text-[10px]"
+                        className="text-muted-foreground/40 hover:text-rose-500 font-bold uppercase tracking-widest text-[10px] transition-colors"
                     >
                         Sign out and try again later
                     </Button>
-                </div>
+                </motion.div>
             </div>
         );
     }

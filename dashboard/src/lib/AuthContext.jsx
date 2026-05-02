@@ -117,7 +117,11 @@ export const AuthProvider = ({ children }) => {
 
                 console.log('[Auth Event]', event);
 
-                if (event === 'INITIAL_SESSION') return;
+                if (event === 'PASSWORD_RECOVERY') {
+                    console.log('[Auth] Password recovery detected, redirecting...');
+                    window.location.assign('/reset-password');
+                    return;
+                }
 
                 if (session) {
                     // 🔥 SET BASIC USER FAST

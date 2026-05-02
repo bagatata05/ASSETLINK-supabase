@@ -70,7 +70,7 @@ export function AnalyticsPreview() {
 
   return (
     <section id="analytics" ref={containerRef} className="border-b border-border/60 overflow-hidden">
-      <div className="w-full px-6 py-20 md:px-12 md:py-24 lg:px-16">
+      <div className="w-full px-4 py-16 md:px-12 md:py-24 lg:px-16">
         <Reveal once={false}>
           <div className="max-w-2xl">
             <p className="text-xs font-medium tracking-wide text-primary uppercase">Analytics & reporting</p>
@@ -86,17 +86,17 @@ export function AnalyticsPreview() {
         </Reveal>
 
         <StaggerGroup
-          className="mt-12 grid gap-4 lg:grid-cols-3"
+          className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3"
           staggerChildren={0.15}
           delayChildren={0.1}
           once={false}
         >
           {/* Resolution time */}
-          <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-5 transition-shadow duration-300 hover:shadow-md">
-            <header className="flex items-start justify-between">
+          <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-4 sm:p-5 transition-shadow duration-300 hover:shadow-md">
+            <header className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs text-muted-foreground">Avg. resolution time</p>
-                <div className="mt-1 flex items-baseline gap-2 font-serif text-3xl">
+                <div className="mt-1 flex items-baseline gap-2 font-serif text-2xl sm:text-3xl">
                   <Counter to={1.8} decimals={1} suffix="d" duration={1.5} once={false} />
                   <span className="inline-flex items-center gap-0.5 text-xs font-sans font-medium text-primary">
                     <TrendingDown className="h-3 w-3" aria-hidden="true" />
@@ -104,27 +104,28 @@ export function AnalyticsPreview() {
                   </span>
                 </div>
               </div>
-              <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
                 Last 6 months
               </span>
             </header>
-            <ChartContainer config={resolutionConfig} className="mt-4 h-44 w-full">
+            <ChartContainer config={resolutionConfig} className="mt-4 h-40 sm:h-44 w-full">
               <LineChart 
                 key={isVisible ? "visible" : "hidden"}
                 data={isVisible ? resolutionData : []} 
-                margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+                margin={{ top: 8, right: 8, left: -24, bottom: 0 }}
               >
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="month"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
+                  minTickGap={10}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
                 />
                 <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
                 <Line
@@ -142,11 +143,11 @@ export function AnalyticsPreview() {
           </StaggerItem>
 
           {/* Damage patterns */}
-          <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-5 transition-shadow duration-300 hover:shadow-md">
-            <header className="flex items-start justify-between">
+          <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-4 sm:p-5 transition-shadow duration-300 hover:shadow-md">
+            <header className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs text-muted-foreground">Damage patterns — school-wide</p>
-                <div className="mt-1 flex items-baseline gap-2 font-serif text-3xl">
+                <div className="mt-1 flex items-baseline gap-2 font-serif text-2xl sm:text-3xl">
                   <Counter to={135} duration={1.2} once={false} />
                   <span className="inline-flex items-center gap-0.5 text-xs font-sans font-medium text-accent-foreground">
                     <TrendingUp className="h-3 w-3" aria-hidden="true" />
@@ -154,28 +155,29 @@ export function AnalyticsPreview() {
                   </span>
                 </div>
               </div>
-              <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
                 By category
               </span>
             </header>
-            <ChartContainer config={damageConfig} className="mt-4 h-44 w-full">
+            <ChartContainer config={damageConfig} className="mt-4 h-40 sm:h-44 w-full">
               <BarChart 
                 key={isVisible ? "visible" : "hidden"}
                 data={isVisible ? damageData : []} 
-                margin={{ top: 8, right: 4, left: -16, bottom: 0 }}
+                margin={{ top: 8, right: 4, left: -24, bottom: 0 }}
               >
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
                 <XAxis
                   dataKey="type"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
-                  interval={0}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 9 }}
+                  interval="preserveStartEnd"
+                  minTickGap={5}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+                  tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
                 />
                 <ChartTooltip cursor={{ fill: "var(--secondary)" }} content={<ChartTooltipContent />} />
                 <Bar 
@@ -190,29 +192,29 @@ export function AnalyticsPreview() {
           </StaggerItem>
 
           {/* Status mix */}
-          <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-5 transition-shadow duration-300 hover:shadow-md">
-            <header className="flex items-start justify-between">
+          <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-4 sm:p-5 transition-shadow duration-300 hover:shadow-md md:col-span-2 lg:col-span-1">
+            <header className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs text-muted-foreground">Ticket status mix</p>
-                <p className="mt-1 font-serif text-3xl">
+                <p className="mt-1 font-serif text-2xl sm:text-3xl">
                   <Counter to={statusTotal} duration={1.2} once={false} />
                 </p>
                 <p className="text-xs text-muted-foreground">tickets tracked</p>
               </div>
-              <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
                 This term
               </span>
             </header>
-            <div className="mt-2 flex items-center gap-4">
-              <ChartContainer config={statusConfig} className="h-40 w-40 shrink-0">
+            <div className="mt-4 flex flex-col sm:flex-row items-center gap-6 sm:gap-4">
+              <ChartContainer config={statusConfig} className="h-32 w-32 sm:h-36 sm:w-36 shrink-0">
                 <PieChart key={isVisible ? "visible" : "hidden"}>
                   <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
                   <Pie
                     data={isVisible ? statusData : []}
                     dataKey="value"
                     nameKey="name"
-                    innerRadius={40}
-                    outerRadius={60}
+                    innerRadius={35}
+                    outerRadius={55}
                     paddingAngle={2}
                     strokeWidth={0}
                     animationDuration={1000}
@@ -224,9 +226,9 @@ export function AnalyticsPreview() {
                   </Pie>
                 </PieChart>
               </ChartContainer>
-              <ul className="flex-1 space-y-2 text-xs">
+              <ul className="w-full sm:flex-1 space-y-2 text-xs">
                 {statusData.map((s) => (
-                  <li key={s.name} className="flex items-center justify-between gap-2">
+                  <li key={s.name} className="flex items-center justify-between gap-2 py-1 border-b border-border/40 last:border-0 sm:border-0">
                     <span className="flex items-center gap-2 text-muted-foreground">
                       <span
                         className="h-2 w-2 rounded-full"
@@ -235,7 +237,7 @@ export function AnalyticsPreview() {
                       />
                       {s.name}
                     </span>
-                    <span className="font-mono text-foreground">{isVisible ? <Counter to={s.value} duration={1} once={false} /> : 0}</span>
+                    <span className="font-mono text-foreground font-semibold">{isVisible ? <Counter to={s.value} duration={1} once={false} /> : 0}</span>
                   </li>
                 ))}
               </ul>

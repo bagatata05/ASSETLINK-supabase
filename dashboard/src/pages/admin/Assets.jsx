@@ -438,13 +438,13 @@ export default function Assets() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input 
                         placeholder="Search registry by name, serial, or taxonomy..." 
-                        className="pl-9 h-9 bg-white border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" 
+                        className="pl-9 h-9 bg-background border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" 
                         value={search} 
                         onChange={e => setSearch(e.target.value)} 
                     />
                 </div>
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white text-sm">
+                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-background text-sm">
                         <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -532,17 +532,17 @@ export default function Assets() {
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label className="text-xs font-medium text-foreground">Asset Name</Label>
-                            <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Dell Smart Hub" className="h-9 bg-white border-border text-sm" />
+                            <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Dell Smart Hub" className="h-9 bg-background border-border text-sm" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-xs font-medium text-foreground">Serial / Code</Label>
-                                <Input value={form.asset_code} onChange={e => setForm({ ...form, asset_code: e.target.value })} placeholder="AL-001" className="h-9 bg-white border-border text-sm" />
+                                <Input value={form.asset_code} onChange={e => setForm({ ...form, asset_code: e.target.value })} placeholder="AL-001" className="h-9 bg-background border-border text-sm" />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-xs font-medium text-foreground">Category</Label>
                                 <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                                    <SelectTrigger className="h-9 bg-white border-border text-sm"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-9 bg-background border-border text-sm"><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                     </SelectContent>
@@ -551,7 +551,7 @@ export default function Assets() {
                             <div className="space-y-2">
                                 <Label className="text-xs font-medium text-foreground">Condition</Label>
                                 <Select value={form.condition} onValueChange={v => setForm({ ...form, condition: v })}>
-                                    <SelectTrigger className="h-9 bg-white border-border text-sm"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-9 bg-background border-border text-sm"><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         {CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                     </SelectContent>
@@ -559,12 +559,12 @@ export default function Assets() {
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-xs font-medium text-foreground">Location</Label>
-                                <Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="e.g. Room 101" className="h-9 bg-white border-border text-sm" />
+                                <Input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="e.g. Room 101" className="h-9 bg-background border-border text-sm" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label className="text-xs font-medium text-foreground">Description</Label>
-                            <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Additional details..." className="h-9 bg-white border-border text-sm" />
+                            <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Additional details..." className="h-9 bg-background border-border text-sm" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">

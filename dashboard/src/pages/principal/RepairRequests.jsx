@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
-import { AlertTriangle, Search, CheckCircle, ArrowUpCircle, Wrench, ChevronRight, School, UserCircle, Send, X, Check, Image as ImageIcon, Hash, Clock, ShieldCheck, Activity, Shield, Camera } from 'lucide-react';
+import { AlertTriangle, Search, CheckCircle, AlertCircle, ArrowUpCircle, Wrench, ChevronRight, School, UserCircle, Send, X, Check, Image as ImageIcon, Hash, Clock, ShieldCheck, Activity, Shield, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,12 +25,10 @@ export default function PrincipalRepairRequests() {
     const [filterStatus, setFilterStatus] = useState('all');
     const [selected, setSelected] = useState(null);
     const [notes, setNotes] = useState('');
-    const [escalationReason, setEscalationReason] = useState('');
     const [assignedTo, setAssignedTo] = useState('');
     const [maintenanceStaff, setMaintenanceStaff] = useState([]);
     const [scheduledStartDate, setScheduledStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [saving, setSaving] = useState(false);
-    const [escalationAttempted, setEscalationAttempted] = useState(false);
 
     const fetchRequests = async () => {
         try {
@@ -180,10 +178,10 @@ export default function PrincipalRepairRequests() {
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Filter registry..." className="pl-9 h-9 bg-white border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" value={search} onChange={e => setSearch(e.target.value)} />
+                    <Input placeholder="Filter registry..." className="pl-9 h-9 bg-card border-border text-sm w-full focus-visible:ring-1 focus-visible:ring-primary/50" value={search} onChange={e => setSearch(e.target.value)} />
                 </div>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-white text-sm"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-[180px] h-9 bg-card text-sm"><SelectValue placeholder="All Statuses" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Statuses</SelectItem>
                         {STATUSES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -205,7 +203,7 @@ export default function PrincipalRepairRequests() {
                             <span className="label-mono hidden sm:block">Date</span>
                         </div>
                         {filtered.map(req => (
-                            <div key={req.id} onClick={() => { setSelected(req); setNotes(''); setEscalationReason(''); setEscalationAttempted(false); setAssignedTo(req.assigned_to_name || ''); }} className="data-row grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-5 py-3 hover:bg-muted/30 transition-colors cursor-pointer">
+                            <div key={req.id} onClick={() => { setSelected(req); setNotes(''); setAssignedTo(req.assigned_to_name || ''); }} className="data-row grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-4 items-center px-5 py-3 hover:bg-muted/30 transition-colors cursor-pointer">
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-foreground truncate">{req.asset_name}</p>
                                     <p className="text-xs text-muted-foreground truncate">{req.description}</p>
@@ -332,16 +330,63 @@ export default function PrincipalRepairRequests() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-10 bg-primary/5 border border-primary/10 rounded-2xl flex flex-col items-center text-center space-y-4">
-                                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <ShieldCheck className="w-8 h-8 text-primary" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-foreground capitalize">Case Status: {selected.status}</h4>
-                                                <p className="text-sm text-muted-foreground mt-2 px-4 italic leading-relaxed">
-                                                    "Maintenance protocol has been activated. No further administrative action is required at this stage."
-                                                </p>
-                                            </div>
+                                        <div className="space-y-6">
+                                            {/* Resolution Details Section */}
+                                            {(selected.maintenance_notes || selected.completion_photo || selected.teacher_verification_notes) ? (
+                                                <div className="space-y-5">
+                                                    {selected.teacher_verification_notes && (
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] uppercase tracking-widest font-bold text-rose-600 flex items-center gap-1.5">
+                                                                <AlertCircle className="w-3 h-3" /> Teacher Rework Request
+                                                            </Label>
+                                                            <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-xl">
+                                                                <p className="text-sm text-rose-700 leading-relaxed italic">
+                                                                    "{selected.teacher_verification_notes}"
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {selected.maintenance_notes && (
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">Technician Remarks</Label>
+                                                            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                                                                <p className="text-sm text-primary leading-relaxed whitespace-pre-wrap">
+                                                                    {selected.maintenance_notes}
+                                                                </p>
+                                                                <div className="mt-4 pt-3 border-t border-primary/10 flex items-center justify-between text-[10px] font-bold text-primary/80">
+                                                                    <span className="flex items-center gap-1"><Wrench className="w-3 h-3" /> RESTORATION LOG</span>
+                                                                    <span>COST: ₱{selected.actual_cost?.toLocaleString() || '0'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {selected.completion_photo && (
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Resolution Proof (After)</Label>
+                                                            <div className="rounded-xl overflow-hidden border border-emerald-200 bg-emerald-50 aspect-video relative group">
+                                                                <img src={selected.completion_photo} alt="Resolution" className="w-full h-full object-cover" />
+                                                                <div className="absolute top-3 right-3 px-2 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-md shadow-lg flex items-center gap-1">
+                                                                    <CheckCircle className="w-3 h-3" /> REPAIR COMPLETE
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="p-10 bg-primary/5 border border-primary/10 rounded-2xl flex flex-col items-center text-center space-y-4">
+                                                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                                                        <ShieldCheck className="w-8 h-8 text-primary" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-foreground capitalize">Case Status: {selected.status}</h4>
+                                                        <p className="text-sm text-muted-foreground mt-2 px-4 italic leading-relaxed">
+                                                            "Maintenance protocol has been activated. Technicians are currently addressing the reported incident."
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

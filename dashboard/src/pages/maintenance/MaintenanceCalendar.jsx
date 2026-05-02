@@ -200,10 +200,10 @@ export default function MaintenanceCalendar() {
         <div className="space-y-6">
             {/* Role-based Banners */}
             {isAdmin && !isAdminEditing && (
-                <div className="flex items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 shadow-sm">
+                <div className="flex items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-xl px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-3">
-                        <Lock className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                        <span className="text-sm text-amber-800">
+                        <Lock className="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+                        <span className="text-sm text-amber-800 dark:text-amber-200">
                             <strong>Safety Lock Active</strong> — You are currently in view-only mode to prevent accidental changes.
                         </span>
                     </div>
@@ -240,9 +240,9 @@ export default function MaintenanceCalendar() {
             )}
 
             {!isMaintenance && !isAdmin && (
-                <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-                    <Lock className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                    <span className="text-sm text-blue-700"><strong>View Only</strong> — Only Maintenance staff and Administration can reschedule tasks.</span>
+                <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/50 rounded-xl px-4 py-3">
+                    <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    <span className="text-sm text-blue-700 dark:text-blue-200"><strong>View Only</strong> — Only Maintenance staff and Administration can reschedule tasks.</span>
                 </div>
             )}
 
@@ -264,7 +264,7 @@ export default function MaintenanceCalendar() {
 
             {/* Overdue banner */}
             {overdueTasks.length > 0 && (
-                <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                <div className="flex items-center gap-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-xl px-4 py-3 text-sm text-red-700 dark:text-red-400">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                     <span><strong>{overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}</strong> — drag them to a new day to reschedule.</span>
                 </div>
@@ -273,12 +273,12 @@ export default function MaintenanceCalendar() {
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-3 text-xs">
                 <span className="text-muted-foreground font-medium">Workload:</span>
-                {[{ label: 'Light (1–2)', color: 'bg-emerald-100 text-emerald-700' }, { label: 'Moderate (3–4)', color: 'bg-amber-100 text-amber-700' }, { label: 'Heavy (5+)', color: 'bg-red-100 text-red-700' }].map(w => (
+                {[{ label: 'Light (1–2)', color: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' }, { label: 'Moderate (3–4)', color: 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400' }, { label: 'Heavy (5+)', color: 'bg-red-100 dark:bg-red-500/10 text-red-700 dark:text-red-400' }].map(w => (
                     <span key={w.label} className={`px-2.5 py-1 rounded-full font-medium ${w.color}`}>{w.label}</span>
                 ))}
                 <span className="text-muted-foreground ml-2 font-medium">Priority:</span>
                 {['Critical', 'High', 'Medium', 'Low'].map(p => (
-                    <span key={p} className={`px-2.5 py-1 rounded-full text-xs font-medium border ${PRIORITY_COLORS[p]}`}>{p}</span>
+                    <span key={p} className={`px-2.5 py-1 rounded-full text-xs font-medium border ${PRIORITY_COLORS[p]} dark:bg-opacity-20`}>{p}</span>
                 ))}
             </div>
 
@@ -322,7 +322,7 @@ export default function MaintenanceCalendar() {
                                                                 ref={prov.innerRef}
                                                                 {...prov.draggableProps}
                                                                 {...(canEdit ? prov.dragHandleProps : {})}
-                                                                className={`text-xs p-3 rounded-lg border bg-card transition-all ${isCompleted ? 'bg-emerald-50/50 border-emerald-200 opacity-60' : slaClasses} ${canEdit ? 'cursor-grab active:cursor-grabbing select-none' : 'cursor-default'} ${snap.isDragging ? 'shadow-lg rotate-1 opacity-90 ring-1 ring-primary' : 'hover:shadow-sm'}`}
+                                                                className={`text-xs p-3 rounded-lg border bg-card transition-all ${isCompleted ? 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 opacity-60' : slaClasses} ${canEdit ? 'cursor-grab active:cursor-grabbing select-none' : 'cursor-default'} ${snap.isDragging ? 'shadow-lg rotate-1 opacity-90 ring-1 ring-primary' : 'hover:shadow-sm'}`}
                                                             >
                                                                 <div className="flex justify-between items-start mb-1">
                                                                     <div className="flex items-start gap-1.5 min-w-0">
@@ -344,8 +344,8 @@ export default function MaintenanceCalendar() {
                                                                     </div>
                                                                     {isCompleted && (
                                                                         <div className="flex items-center justify-between w-full pt-1 border-t border-emerald-500/10">
-                                                                            <span className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-tighter">Resolution Done</span>
-                                                                            <span className="text-[8px] font-mono text-emerald-600/40">{format(new Date(), 'HH:mm')}</span>
+                                                                            <span className="text-[9px] font-bold text-emerald-600/60 dark:text-emerald-400/60 uppercase tracking-tighter">Resolution Done</span>
+                                                                            <span className="text-[8px] font-mono text-emerald-600/40 dark:text-emerald-400/40">{format(new Date(), 'HH:mm')}</span>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -408,12 +408,12 @@ export default function MaintenanceCalendar() {
             </DragDropContext>
 
             {/* Completed Archive Section */}
-            <div className="bg-emerald-50/30 rounded-xl border border-emerald-200/50 overflow-hidden">
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-emerald-100 bg-emerald-50/50">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <h2 className="text-sm font-bold text-emerald-900">Completed Protocols</h2>
-                    <span className="text-[10px] font-medium text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full uppercase tracking-wider">Registry</span>
-                    <span className="ml-auto text-xs bg-white/80 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full font-bold">
+            <div className="bg-emerald-50/30 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/50 dark:border-emerald-900/50 overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-emerald-100 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/20">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <h2 className="text-sm font-bold text-emerald-900 dark:text-emerald-100">Completed Protocols</h2>
+                    <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100/50 dark:bg-emerald-400/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Registry</span>
+                    <span className="ml-auto text-xs bg-white/80 dark:bg-emerald-900 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-full font-bold">
                         {tasks.filter(t => t.status === 'Completed').length} Total
                     </span>
                 </div>
@@ -427,17 +427,17 @@ export default function MaintenanceCalendar() {
                             tasks.filter(t => t.status === 'Completed')
                                 .slice(0, 6) // Show last 6 completed tasks
                                 .map(task => (
-                                    <div key={task.id} className="flex items-center gap-3 p-3 bg-white border border-emerald-100 rounded-xl shadow-sm">
-                                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                                    <div key={task.id} className="flex items-center gap-3 p-3 bg-white dark:bg-card border border-emerald-100 dark:border-emerald-900/50 rounded-xl shadow-sm">
+                                        <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0 text-emerald-600 dark:text-emerald-400">
                                             <CheckCircle2 className="w-5 h-5" />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-bold text-emerald-900 truncate">{task.asset_name}</p>
-                                            <p className="text-[10px] text-emerald-600/70 truncate">{task.school_name}</p>
+                                            <p className="text-sm font-bold text-emerald-900 dark:text-emerald-100 truncate">{task.asset_name}</p>
+                                            <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/60 truncate">{task.school_name}</p>
                                         </div>
                                         <div className="text-right flex-shrink-0">
-                                            <p className="text-[10px] font-bold text-emerald-700">DONE</p>
-                                            <p className="text-[9px] text-emerald-600/60 uppercase">
+                                            <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">DONE</p>
+                                            <p className="text-[9px] text-emerald-600/60 dark:text-emerald-400/40 uppercase">
                                                 {task.scheduled_start_date ? format(parseISO(task.scheduled_start_date), 'MMM d') : 'No Date'}
                                             </p>
                                         </div>
