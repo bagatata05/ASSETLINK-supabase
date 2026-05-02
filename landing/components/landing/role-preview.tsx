@@ -208,7 +208,6 @@ function PrincipalDashboard() {
           { label: "Open today", value: 4 },
           { label: "Pending approvals", value: 3 },
           { label: "Resolved · 30d", value: 38 },
-          { label: "Escalated", value: 2 },
         ].map((s) => (
           <div key={s.label} className="rounded-lg border border-border bg-background p-3">
             <p className="text-[11px] text-muted-foreground">{s.label}</p>
