@@ -13,6 +13,7 @@ import { sileo } from 'sileo';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
+import { notifyTeacherOfCompletion } from '@/lib/notifications';
 
 const TASK_STATUSES = ['Assigned', 'In Progress', 'On Hold', 'Completed', 'Pending Teacher Verification'];
 
@@ -186,11 +187,19 @@ export default function Tasks() {
                     status: updateData.status,
                     maintenance_notes: form.notes,
                     materials_used: form.materials_used,
-                    actual_cost: updateData.cost, // use the float we parsed
+                    actual_cost: updateData.cost,
                     completion_photo: form.completion_photo,
                     updated_at: now
                 }).eq('id', selected.repair_request_id);
                 if (error2) throw error2;
+
+                // 🔔 Notify Teacher for verification
+                if (form.status === 'Completed') {
+                    notifyTeacherOfCompletion({
+                        reported_by_email: selected.reported_by_email,
+                        asset_name: selected.asset_name
+                    });
+                }
             }
 
             sileo.success({
