@@ -50,9 +50,16 @@ export default function Layout() {
         });
     };
 
-    const pageTitle = location.pathname === '/'
-        ? 'Overview'
-        : location.pathname.slice(1).split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+    const pageTitle = (() => {
+        const path = location.pathname;
+        if (path === '/') return 'Overview';
+        if (path.includes('/history')) return 'Asset History';
+        if (path.includes('/repair-requests')) return 'Repair Requests';
+        if (path.includes('/report-damage')) return 'Report Damage';
+        if (path.includes('/user-approvals')) return 'User Approvals';
+        
+        return path.slice(1).split('/').pop().split('-').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ');
+    })();
 
     return (
         <div className="h-screen bg-background flex overflow-hidden">
