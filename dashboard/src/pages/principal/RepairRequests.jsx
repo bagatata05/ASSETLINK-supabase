@@ -146,7 +146,7 @@ export default function PrincipalRepairRequests() {
             if (mtError) throw mtError;
 
             // 📧 Notify Technician
-            notifyTechnicianOfAssignment({
+            await notifyTechnicianOfAssignment({
                 asset_name: selected.asset_name,
                 school_name: selected.school_name || currentUser?.school_name || 'Central Campus',
                 priority: selected.priority,
@@ -155,7 +155,7 @@ export default function PrincipalRepairRequests() {
             });
 
             // 📧 Notify Teacher
-            notifyTeacherOfApproval({
+            await notifyTeacherOfApproval({
                 asset_name: selected.asset_name,
                 reported_by_email: selected.reported_by_email,
                 assigned_to_name: assignedTo

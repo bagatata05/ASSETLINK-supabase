@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { createInAppNotification } from '@/lib/notifications';
 import { useAuth } from '@/lib/AuthContext';
 import { 
     ShieldCheck, UserCheck, UserX, Search, Filter, 
@@ -26,6 +27,7 @@ export default function UserApprovals() {
     const fetchPendingUsers = async () => {
         setIsLoading(true);
         try {
+            // @ts-ignore
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -62,6 +64,19 @@ export default function UserApprovals() {
             });
             
             setPendingUsers(prev => prev.filter(u => u.id !== userId));
+
+            // ✅ TRIGGER NOTIFICATION FOR THE USER
+            if (approve) {
+                const userToApprove = pendingUsers.find(u => u.id === userId);
+                if (userToApprove?.email) {
+                    await createInAppNotification({
+                        user_email: userToApprove.email,
+                        title: 'Account Approved! 🎉',
+                        message: `Welcome ${userToApprove.full_name}! Your AssetLink account has been authorized. You can now access all dashboard features.`,
+                        type: 'success'
+                    });
+                }
+            }
         } catch (error) {
             sileo.error({ title: 'Update Failed', description: error.message });
         }

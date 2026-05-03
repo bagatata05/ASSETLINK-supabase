@@ -127,7 +127,7 @@ export default function ReportDamage() {
             if (error) throw error;
 
             // 📧 Notify Principal
-            notifyPrincipalOfNewReport({
+            await notifyPrincipalOfNewReport({
                 asset_name: selectedAsset.name,
                 asset_code: selectedAsset.asset_code,
                 priority: form.priority,

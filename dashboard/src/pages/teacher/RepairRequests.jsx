@@ -93,7 +93,7 @@ export default function TeacherRepairRequests() {
             if (mtError) throw mtError;
 
             // 📧 Notify Technician
-            notifyTechnicianOfVerification(selected);
+            await notifyTechnicianOfVerification(selected);
 
             sileo.success({
                 title: 'Repair Verified',
@@ -140,7 +140,7 @@ export default function TeacherRepairRequests() {
             if (mtError) throw mtError;
 
             // 📧 Notify Technician
-            notifyTechnicianOfRework(selected, verificationFeedback);
+            await notifyTechnicianOfRework(selected, verificationFeedback);
 
             sileo.success({
                 title: 'Tactical Rework Initiated',

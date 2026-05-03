@@ -127,21 +127,28 @@ export const templates = {
  * Creates an in-app notification in the Supabase database.
  */
 export async function createInAppNotification({ user_email, title, message, type = 'info', link = null }) {
+    console.log(`[Notifications] Attempting In-App Insert for: ${user_email}`, { title, type });
     try {
         // @ts-ignore - notifications table is newly created and not yet in types
-        const { error } = await supabase.from('notifications')
+        const { data, error } = await supabase.from('notifications')
             .insert([{
-                user_email,
+                user_email: user_email.toLowerCase(),
                 title,
                 message,
                 type,
-                link
-            }]);
+                link,
+                is_read: false
+            }])
+            .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('[Notifications] Database Insert Error:', error);
+            throw error;
+        }
+        console.log('[Notifications] Success! Record created:', data?.[0]?.id);
         return { success: true };
     } catch (error) {
-        console.error('[Notifications] Failed to create in-app notification:', error);
+        console.error('[Notifications] Caught Exception during insert:', error);
         return { success: false, error: error.message };
     }
 }
@@ -156,16 +163,21 @@ export async function notifyPrincipalOfNewReport(report, manualEmail = null) {
         if (manualEmail) {
             emails = [manualEmail];
         } else {
-            const { data: principals, error } = await supabase
+            const { data: recipients, error } = await supabase
                 .from('profiles')
                 .select('email')
-                .eq('role', 'principal');
+                .in('role', ['principal', 'admin']);
 
-            if (error) throw error;
-            emails = principals?.map(p => p.email).filter(Boolean);
+            if (error) {
+                console.error('[Notifications] Recipient Fetch Error:', error);
+                throw error;
+            }
+            emails = recipients?.map(p => p.email).filter(Boolean);
+            console.log(`[Notifications] Found ${emails.length} recipients for report:`, emails);
         }
 
         if (!emails || emails.length === 0) {
+            console.warn('[Notifications] ABORT: No recipients found for notification.');
             return { success: false, error: 'No recipients' };
         }
 
@@ -173,7 +185,7 @@ export async function notifyPrincipalOfNewReport(report, manualEmail = null) {
         
         // 🔔 Create In-App Notifications for all principals
         for (const email of emails) {
-            createInAppNotification({
+            await createInAppNotification({
                 user_email: email,
                 title: 'New Damage Report',
                 message: `${report.reported_by_name} reported an issue with ${report.asset_name}.`,
@@ -201,7 +213,7 @@ export async function notifyTechnicianOfAssignment(task) {
 
     try {
         // 🔔 Create In-App Notification
-        createInAppNotification({
+        await createInAppNotification({
             user_email: task.assigned_to_email,
             title: 'New Task Assigned',
             message: `You have been assigned to repair ${task.asset_name} at ${task.school_name}.`,
@@ -229,7 +241,7 @@ export async function notifyTechnicianOfRework(report, feedback) {
 
     try {
         // 🔔 Create In-App Notification
-        createInAppNotification({
+        await createInAppNotification({
             user_email: report.assigned_to_email,
             title: 'Rework Requested',
             message: `Additional work is required for ${report.asset_name}. Feedback: ${feedback}`,
@@ -257,7 +269,7 @@ export async function notifyTechnicianOfVerification(report) {
 
     try {
         // 🔔 Create In-App Notification
-        createInAppNotification({
+        await createInAppNotification({
             user_email: report.assigned_to_email,
             title: 'Repair Verified',
             message: `Your repair for ${report.asset_name} has been verified and closed. Great job!`,
@@ -285,7 +297,7 @@ export async function notifyTeacherOfApproval(report) {
 
     try {
         // 🔔 Create In-App Notification
-        createInAppNotification({
+        await createInAppNotification({
             user_email: report.reported_by_email,
             title: 'Repair Approved',
             message: `Your report for ${report.asset_name} has been approved and assigned to ${report.assigned_to_name}.`,
@@ -330,7 +342,7 @@ export async function notifyTeacherOfCompletion(report) {
 
     try {
         // 🔔 Create In-App Notification
-        createInAppNotification({
+        await createInAppNotification({
             user_email: report.reported_by_email,
             title: 'Repair Ready for Verification',
             message: `The maintenance for ${report.asset_name} is complete. Please verify the work to close the case.`,

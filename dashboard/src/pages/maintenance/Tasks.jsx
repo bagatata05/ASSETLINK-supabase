@@ -195,7 +195,7 @@ export default function Tasks() {
 
                 // 🔔 Notify Teacher for verification
                 if (form.status === 'Completed') {
-                    notifyTeacherOfCompletion({
+                    await notifyTeacherOfCompletion({
                         reported_by_email: selected.reported_by_email,
                         asset_name: selected.asset_name
                     });

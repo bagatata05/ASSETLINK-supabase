@@ -14,6 +14,7 @@ import Layout from './components/Layout';
 
 // Shared Pages
 import Profile from './pages/shared/Profile';
+import AssetHistory from './pages/shared/AssetHistory';
 
 // Dashboards
 import DashboardTeacher from './pages/teacher/Dashboard';
@@ -174,6 +175,7 @@ const AuthenticatedApp = () => {
             <Route element={<Layout />}>
                 <Route path="/" element={renderDashboard()} />
                 <Route path="/assets" element={<Assets />} />
+                <Route path="/assets/:id/history" element={<AssetHistory />} />
                 <Route path="/repair-requests" element={renderRepairRequests()} />
                 <Route path="/report-damage" element={<ReportDamage />} />
                 <Route path="/tasks" element={<Tasks />} />

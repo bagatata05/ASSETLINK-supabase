@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
-import { Package, Plus, Search, QrCode, Edit2, Trash2, Printer, CheckSquare, Square, X } from 'lucide-react';
+import { Package, Plus, Search, QrCode, Edit2, Trash2, Printer, CheckSquare, Square, X, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -504,6 +505,11 @@ export default function Assets() {
                                     <StatusBadge status={asset.condition} size="sm" />
                                 </div>
                                 <div className="w-16 flex justify-end gap-1">
+                                    {!selectMode && (
+                                        <Link to={`/assets/${asset.id}/history`} className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-md hover:bg-primary/5" onClick={(e) => e.stopPropagation()}>
+                                            <History className="w-3.5 h-3.5" />
+                                        </Link>
+                                    )}
                                     {!selectMode && (role === 'admin' || role === 'principal') && (
                                         <>
                                             <button onClick={(e) => { e.stopPropagation(); openEdit(asset); }} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted">

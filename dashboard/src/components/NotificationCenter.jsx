@@ -22,13 +22,15 @@ export default function NotificationCenter() {
         fetchNotifications();
 
         // Subscribe to real-time changes
+        const userEmail = currentUser.email.toLowerCase();
         const channel = supabase
-            .channel(`notifications-${currentUser.email}`)
+            .channel(`notifications-${userEmail}`)
             .on('postgres_changes', { 
                 event: 'INSERT', 
                 schema: 'public', 
+                // @ts-ignore - notifications table is newly created and not yet in types
                 table: 'notifications',
-                filter: `user_email=eq.${currentUser.email}`
+                filter: `user_email=eq.${userEmail}`
             }, (payload) => {
                 setNotifications(prev => [payload.new, ...prev]);
                 setUnreadCount(prev => prev + 1);
@@ -57,10 +59,13 @@ export default function NotificationCenter() {
     }, []);
 
     const fetchNotifications = async () => {
+        if (!currentUser?.email) return;
+        const userEmail = currentUser.email.toLowerCase();
+        
         // @ts-ignore - notifications table is newly created and not yet in types
         const { data, error } = await supabase.from('notifications')
             .select('*')
-            .eq('user_email', currentUser.email)
+            .eq('user_email', userEmail)
             .order('created_at', { ascending: false })
             .limit(20);
 

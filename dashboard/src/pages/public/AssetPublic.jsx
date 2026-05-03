@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
+import { Link } from 'react-router-dom';
 import StatusBadge from '../../components/StatusBadge';
-import { Package, Wrench, Calendar, MapPin, Tag, AlertTriangle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Package, Wrench, Calendar, MapPin, Tag, AlertTriangle, ArrowRight, ShieldCheck, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
 export default function AssetPublic() {
+    const { currentUser } = useAuth();
     const urlParams = new URLSearchParams(window.location.search);
     const assetId = urlParams.get('id');
     const [asset, setAsset] = useState(null);
@@ -107,6 +110,17 @@ export default function AssetPublic() {
                     <span className="text-[11px] font-semibold text-foreground">{format(new Date(), 'MMM d, h:mm a')}</span>
                 </div>
             </motion.div>
+
+            {/* Staff Only Access */}
+            {currentUser && (
+                <motion.div variants={itemVariants} className="px-4">
+                    <Link to={`/assets/${assetId}/history`}>
+                        <Button className="w-full h-12 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest shadow-sm">
+                            <History className="w-4 h-4" /> Full System X-Ray
+                        </Button>
+                    </Link>
+                </motion.div>
+            )}
 
             {/* Main Asset Information */}
             <motion.div 

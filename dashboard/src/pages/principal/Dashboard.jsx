@@ -9,33 +9,80 @@ import { format, parseISO, isToday } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
+import { Users, Eye } from 'lucide-react';
+
 export default function PrincipalDashboard() {
     const { currentUser } = useAuth();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [staffCount, setStaffCount] = useState(0);
+    const [liveUsers, setLiveUsers] = useState(1); // Default to current user
 
-    const fetchRequests = async () => {
+    const fetchAnalytics = async () => {
         if (!currentUser) return;
         try {
-            const { data, error } = await supabase
+            // 📊 Fetch Repair Requests
+            const { data: reqData, error: reqError } = await supabase
                 .from('repair_requests')
                 .select('*')
                 .order('created_at', { ascending: false });
-            if (error) throw error;
-            setRequests(data || []);
+            if (reqError) throw reqError;
+            setRequests(reqData || []);
+
+            // 👥 Fetch Approved Staff Count Only
+            const { count, error: countError } = await supabase
+                .from('profiles')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'approved');
+            if (countError) throw countError;
+            setStaffCount(count || 0);
+
         } catch (error) {
-            console.error('PrincipalDashboard error:', error);
+            console.error('PrincipalDashboard analytics error:', error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchRequests();
-        const channel = supabase.channel('principal-dashboard')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchRequests)
+        fetchAnalytics();
+
+        // 📡 Real-time Subscription for Requests
+        const reqChannel = supabase.channel('principal-requests')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchAnalytics)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchAnalytics)
             .subscribe();
-        return () => supabase.removeChannel(channel);
+
+        // 📡 Presence Tracking for Live Users
+        const presenceChannel = supabase.channel('site-presence', {
+            config: { presence: { key: currentUser?.email } }
+        });
+
+        presenceChannel
+            .on('presence', { event: 'sync' }, () => {
+                const state = presenceChannel.presenceState();
+                setLiveUsers(Object.keys(state).length);
+            })
+            .on('presence', { event: 'join' }, ({ newPresences }) => {
+                console.log('User joined:', newPresences);
+            })
+            .on('presence', { event: 'leave' }, ({ leftPresences }) => {
+                console.log('User left:', leftPresences);
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await presenceChannel.track({
+                        user_id: currentUser?.id,
+                        email: currentUser?.email,
+                        online_at: new Date().toISOString(),
+                    });
+                }
+            });
+
+        return () => {
+            supabase.removeChannel(reqChannel);
+            supabase.removeChannel(presenceChannel);
+        };
     }, [currentUser]);
 
     if (loading) {
@@ -65,13 +112,19 @@ export default function PrincipalDashboard() {
                             : 'All requests have been addressed'}
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10 shadow-sm">
+                        <div className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Eye className="w-3 h-3" />
+                            {liveUsers} Live Now
+                        </span>
+                    </div>
                     {scheduledToday.length > 0 && (
                         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20">
-                            <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                            </span>
                             <span className="label-mono text-emerald-700 dark:text-emerald-400">{scheduledToday.length} active today</span>
                         </div>
                     )}
@@ -84,7 +137,8 @@ export default function PrincipalDashboard() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <StatsCard title="Total Staff" value={staffCount} subtitle="Verified Staff" icon={Users} color="blue" />
                 <StatsCard title="Pending" value={pendingApproval.length} subtitle="Decision required" icon={Clock} color="amber" />
                 <StatsCard title="In Progress" value={inProgress.length} subtitle="Active work orders" icon={Wrench} color="blue" />
                 <StatsCard title="Resolved" value={completed.length} subtitle="Completed repairs" icon={CheckCircle} color="teal" />
