@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { sileo } from 'sileo';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import NotificationCenter from './NotificationCenter';
 
 const navItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'teacher', 'principal', 'maintenance'] },
@@ -184,6 +185,8 @@ export default function Layout() {
                             </span>
                             <span className="label-mono text-[10px]">Operational</span>
                         </div>
+                        
+                        <NotificationCenter />
                         <ThemeToggle />
                     </div>
                 </header>
