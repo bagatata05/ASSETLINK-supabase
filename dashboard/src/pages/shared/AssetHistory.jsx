@@ -5,7 +5,7 @@ import StatusBadge from '../../components/StatusBadge';
 import { 
     Package, Wrench, Calendar, MapPin, Tag, AlertTriangle, 
     ArrowLeft, History, DollarSign, Hammer, ClipboardCheck, 
-    User, HardHat, FileText, ChevronRight
+    User, HardHat, FileText, ChevronRight, Eye, ShieldCheck
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
@@ -24,34 +24,93 @@ export default function AssetHistory() {
         
         async function loadXRayData() {
             try {
-                // 1. Fetch Asset Details
-                const { data: assetData, error: assetError } = await supabase
+                setLoading(true);
+                setNotFound(false);
+
+                // 1. Try to fetch as an official Asset
+                const { data: assetData } = await supabase
                     .from('assets')
                     .select('*')
                     .eq('id', assetId)
                     .single();
-                
-                if (assetError || !assetData) { 
-                    setNotFound(true); 
-                    setLoading(false); 
-                    return; 
-                }
-                setAsset(assetData);
 
-                // 2. Fetch Repair Requests and JOIN with Maintenance Tasks
-                // We fetch all requests for this asset
-                const { data: repairsData, error: repairsError } = await supabase
+                let currentAssetName = null;
+                let fallbackAssetData = null;
+
+                if (assetData) {
+                    setAsset(assetData);
+                    currentAssetName = assetData.name;
+                } else {
+                    // 1b. Fallback: check if the URL ID is a repair_request ID
+                    const { data: repairRef } = await supabase
+                        .from('repair_requests')
+                        .select('asset_name, asset_id, asset_code, created_at')
+                        .eq('id', assetId)
+                        .single();
+
+                    if (repairRef) {
+                        currentAssetName = repairRef.asset_name;
+                        fallbackAssetData = {
+                            name: repairRef.asset_name || 'Unregistered System',
+                            asset_code: repairRef.asset_code || 'N/A',
+                            category: 'Repair Record',
+                            location: 'On-site',
+                            created_at: repairRef.created_at,
+                            condition: 'Recovered'
+                        };
+                    }
+                }
+
+                // 2. Fetch repair_requests (NO JOIN — foreign key doesn't exist)
+                const { data: byId } = await supabase
                     .from('repair_requests')
-                    .select(`
-                        *,
-                        maintenance_tasks (*)
-                    `)
+                    .select('*')
                     .eq('asset_id', assetId)
                     .order('created_at', { ascending: false });
-                
-                if (!repairsError && repairsData) {
-                    setHistory(repairsData);
+
+                let byName = [];
+                if (currentAssetName) {
+                    const { data: nameData } = await supabase
+                        .from('repair_requests')
+                        .select('*')
+                        .eq('asset_name', currentAssetName)
+                        .order('created_at', { ascending: false });
+                    byName = nameData || [];
                 }
+
+                // Merge and deduplicate
+                const allRepairs = [...(byId || []), ...byName];
+                const uniqueMap = new Map(allRepairs.map(item => [item.id, item]));
+                let uniqueRepairs = Array.from(uniqueMap.values());
+                uniqueRepairs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                // 3. Separately fetch maintenance_tasks for these repairs
+                if (uniqueRepairs.length > 0) {
+                    const repairIds = uniqueRepairs.map(r => r.id);
+                    const { data: tasks } = await supabase
+                        .from('maintenance_tasks')
+                        .select('*')
+                        .in('repair_request_id', repairIds);
+
+                    // Attach tasks to their parent repair
+                    const taskMap = {};
+                    (tasks || []).forEach(t => {
+                        if (!taskMap[t.repair_request_id]) taskMap[t.repair_request_id] = [];
+                        taskMap[t.repair_request_id].push(t);
+                    });
+                    uniqueRepairs = uniqueRepairs.map(r => ({
+                        ...r,
+                        maintenance_tasks: taskMap[r.id] || []
+                    }));
+
+                    setHistory(uniqueRepairs);
+                    if (!assetData && fallbackAssetData) {
+                        setAsset(fallbackAssetData);
+                    }
+                } else if (!assetData) {
+                    setNotFound(true);
+                }
+
             } catch (error) {
                 console.error("X-Ray Error:", error);
                 setNotFound(true);
@@ -62,23 +121,6 @@ export default function AssetHistory() {
         
         loadXRayData();
     }, [assetId]);
-
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.05 }
-        }
-    };
-
-    const itemVariants = {
-        hidden: { x: -20, opacity: 0 },
-        visible: {
-            x: 0,
-            opacity: 1,
-            transition: { type: 'spring', stiffness: 300, damping: 24 }
-        }
-    };
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -105,192 +147,208 @@ export default function AssetHistory() {
     }, 0);
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-20">
-            {/* Header / Breadcrumb */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Link to="/assets">
-                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Button>
-                    </Link>
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <History className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">System X-Ray</span>
+        <div className="max-w-6xl mx-auto space-y-8 pb-24">
+            {/* 🏛️ MINIMALIST HEADER */}
+            <div className="space-y-1">
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">Asset Analysis</h1>
+                <p className="text-sm text-muted-foreground">Lifecycle history and resolution logs for this system node.</p>
+            </div>
+
+            {/* 📊 DASHBOARD-STYLE STATS GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Total Investment */}
+                <div className="bg-card border border-border p-5 rounded-xl shadow-sm flex flex-col justify-between group hover:border-primary/20 transition-colors">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Total Investment</span>
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                            <DollarSign className="w-4 h-4 text-emerald-600" />
                         </div>
-                        <h1 className="text-2xl font-bold tracking-tight text-foreground">Lifecycle History</h1>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-foreground tabular-nums">₱{totalSpent.toLocaleString()}</p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 uppercase font-bold tracking-tight">Cumulative Cost</p>
                     </div>
                 </div>
-                
-                <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 bg-card border border-border rounded-xl shadow-sm">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Total Maintenance Investment</p>
-                        <p className="text-lg font-bold text-emerald-600 flex items-center gap-1.5">
-                            <DollarSign className="w-4 h-4" />
-                            {totalSpent.toLocaleString()}
-                        </p>
+
+                {/* Total Incidents */}
+                <div className="bg-card border border-border p-5 rounded-xl shadow-sm flex flex-col justify-between group hover:border-primary/20 transition-colors">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Incident Count</span>
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                            <AlertTriangle className="w-4 h-4 text-amber-600" />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-foreground tabular-nums">{history.length}</p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 uppercase font-bold tracking-tight">Lifetime Events</p>
+                    </div>
+                </div>
+
+                {/* Status */}
+                <div className="bg-card border border-border p-5 rounded-xl shadow-sm flex flex-col justify-between group hover:border-primary/20 transition-colors">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">System Integrity</span>
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                            <ShieldCheck className="w-4 h-4 text-blue-600" />
+                        </div>
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <div className={cn("w-2 h-2 rounded-full animate-pulse", asset.condition === 'Good' ? 'bg-emerald-500' : 'bg-amber-500')} />
+                            <p className="text-2xl font-bold text-foreground">{asset.condition}</p>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 uppercase font-bold tracking-tight">Current Condition</p>
+                    </div>
+                </div>
+
+                {/* Registered */}
+                <div className="bg-card border border-border p-5 rounded-xl shadow-sm flex flex-col justify-between group hover:border-primary/20 transition-colors">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">Deployment Date</span>
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center border border-border">
+                            <Calendar className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-lg font-bold text-foreground">{format(new Date(asset.created_at), 'MMM d, yyyy')}</p>
+                        <p className="text-[10px] text-muted-foreground/50 mt-1 uppercase font-bold tracking-tight">Registration Point</p>
                     </div>
                 </div>
             </div>
 
-            {/* Asset Summary Card */}
-            <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-                <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
-                    <div className="w-24 h-24 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 shrink-0">
-                        <Package className="w-12 h-12 text-primary" />
+            {/* 🛸 ASSET PROFILE - MINIMAL CARD */}
+            <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden p-6 md:p-8">
+                <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+                    <div className="w-20 h-20 rounded-xl bg-muted/50 border border-border flex items-center justify-center shrink-0">
+                        <Package className="w-10 h-10 text-muted-foreground/40" />
                     </div>
+                    
                     <div className="flex-1 space-y-4">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h2 className="text-3xl font-bold text-foreground tracking-tight">{asset.name}</h2>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    Code: <span className="font-mono font-bold text-primary">{asset.asset_code}</span> · 
-                                    Registered {format(new Date(asset.created_at), 'MMM yyyy')}
-                                </p>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded text-muted-foreground uppercase tracking-widest">#{asset.asset_code}</span>
+                                    <span className="text-[10px] font-bold text-muted-foreground/40">•</span>
+                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{asset.category}</span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-foreground tracking-tight">{asset.name}</h2>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                                <StatusBadge status={asset.condition} />
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-muted text-[11px] font-bold text-muted-foreground">
-                                    <Tag className="w-3 h-3" /> {asset.category}
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-muted text-[11px] font-bold text-muted-foreground">
-                                    <MapPin className="w-3 h-3" /> {asset.location || 'Generic'}
-                                </span>
+                            <div className="flex items-center gap-2">
+                                <div className="h-8 flex items-center gap-2 px-3 rounded-lg bg-muted/30 border border-border text-[11px] font-bold text-muted-foreground">
+                                    <MapPin className="w-3.5 h-3.5" /> {asset.location || 'Central Room'}
+                                </div>
+                                <Link to="/assets">
+                                    <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold uppercase tracking-wider">
+                                        Back to Inventory
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Timeline View */}
-            <div className="space-y-6 relative">
-                <div className="absolute left-[39px] top-8 bottom-0 w-px bg-gradient-to-b from-border via-border to-transparent hidden md:block" />
-                
-                <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mb-8 pl-10 md:pl-0 md:ml-[80px]">
-                    Chronological Events
-                </h3>
+            {/* 🗓️ CHRONOLOGICAL TIMELINE */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-2 pl-1">
+                    <History className="w-4 h-4 text-muted-foreground/30" />
+                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        Operational Timeline
+                    </h3>
+                </div>
 
-                <motion.div 
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="space-y-12"
-                >
+                <div className="space-y-4">
                     {history.length === 0 ? (
-                        <div className="ml-[80px] p-12 text-center bg-muted/20 rounded-3xl border border-dashed border-border">
-                            <ClipboardCheck className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
-                            <p className="text-sm font-medium text-muted-foreground">No repair events recorded for this asset yet.</p>
+                        <div className="p-16 text-center bg-muted/5 rounded-xl border border-dashed border-border/60">
+                            <ClipboardCheck className="w-10 h-10 text-muted-foreground/20 mx-auto mb-4" />
+                            <h4 className="text-sm font-bold text-muted-foreground">No records found</h4>
+                            <p className="text-xs text-muted-foreground/60 mt-1">This asset has no recorded repair events.</p>
                         </div>
                     ) : history.map((req, idx) => {
                         const task = req.maintenance_tasks?.[0];
                         return (
-                            <motion.div key={req.id} variants={itemVariants} className="relative md:pl-[80px]">
-                                {/* Timeline Dot */}
-                                <div className="absolute left-[32px] top-0 w-4 h-4 rounded-full bg-background border-4 border-primary z-10 hidden md:block shadow-[0_0_0_4px_white] dark:shadow-none" />
-                                
-                                <div className="group bg-card border border-border rounded-[2rem] overflow-hidden shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300">
-                                    <div className="flex flex-col lg:flex-row">
-                                        {/* Left Side: The Issue */}
-                                        <div className="p-6 lg:p-8 flex-1 border-b lg:border-b-0 lg:border-r border-border">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Reported</span>
-                                                    <StatusBadge status={req.status} size="sm" />
-                                                </div>
-                                                <span className="text-xs font-bold text-muted-foreground">
-                                                    {format(new Date(req.created_at), 'MMMM d, yyyy')}
-                                                </span>
+                            <div key={req.id} className="group bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:border-primary/30 transition-all duration-300">
+                                <div className="flex flex-col lg:flex-row">
+                                    {/* Left Panel: The Diagnosis */}
+                                    <div className="p-6 lg:p-8 flex-1 border-b lg:border-b-0 lg:border-r border-border">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Entry #{history.length - idx}</div>
+                                                <StatusBadge status={req.status} size="xs" />
                                             </div>
-                                            
-                                            <div className="space-y-3">
-                                                <h4 className="text-lg font-bold text-foreground leading-tight">{req.description}</h4>
-                                                <div className="flex items-center gap-4 text-[11px] text-muted-foreground font-medium">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <User className="w-3.5 h-3.5" />
-                                                        {req.reported_by_name}
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <AlertTriangle className={cn("w-3.5 h-3.5", req.priority === 'High' ? 'text-rose-500' : 'text-amber-500')} />
-                                                        {req.priority} Priority
-                                                    </div>
-                                                </div>
-                                                
-                                                {req.issue_photo && (
-                                                    <div className="mt-4 rounded-2xl overflow-hidden border border-border aspect-video bg-muted">
-                                                        <img src={req.issue_photo} alt="Issue" className="w-full h-full object-cover" />
-                                                    </div>
-                                                )}
+                                            <div className="text-[10px] font-bold text-muted-foreground/40 uppercase">
+                                                {format(new Date(req.created_at), 'MMM d, yyyy')}
                                             </div>
                                         </div>
-
-                                        {/* Right Side: The Solution (X-Ray) */}
-                                        <div className="p-6 lg:p-8 lg:w-[400px] bg-muted/30 flex flex-col justify-between">
-                                            {task ? (
-                                                <div className="space-y-6">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                                                <HardHat className="w-4 h-4 text-emerald-600" />
-                                                            </div>
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Resolution</span>
-                                                        </div>
-                                                        {task.cost > 0 && (
-                                                            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">
-                                                                ₱{task.cost.toLocaleString()}
-                                                            </span>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Technical Notes</p>
-                                                            <p className="text-[13px] text-foreground/80 font-medium leading-relaxed italic">
-                                                                "{task.maintenance_notes || 'No specific maintenance notes recorded.'}"
-                                                            </p>
-                                                        </div>
-
-                                                        {task.materials_used && (
-                                                            <div>
-                                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Materials & Parts</p>
-                                                                <div className="flex flex-wrap gap-1.5">
-                                                                    {task.materials_used.split(',').map((m, i) => (
-                                                                        <span key={i} className="text-[11px] font-medium bg-card border border-border px-2.5 py-1 rounded-lg">
-                                                                            {m.trim()}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {task.completion_photo_url && (
-                                                            <div className="rounded-xl overflow-hidden border border-border shadow-sm h-32">
-                                                                <img src={task.completion_photo_url} alt="Fixed" className="w-full h-full object-cover" />
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="pt-4 border-t border-border/50">
-                                                        <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground/60 uppercase">
-                                                            <span>Technician</span>
-                                                            <span className="text-foreground">{task.assigned_to_name || 'Naphier'}</span>
-                                                        </div>
-                                                    </div>
+                                        
+                                        <div className="space-y-4">
+                                            <h4 className="text-lg font-bold text-foreground leading-tight group-hover:text-primary transition-colors">{req.description}</h4>
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase">
+                                                    <User className="w-3.5 h-3.5" />
+                                                    {req.reported_by_name}
                                                 </div>
-                                            ) : (
-                                                <div className="h-full flex flex-col items-center justify-center text-center py-8 opacity-40">
-                                                    <Hammer className="w-10 h-10 mb-3" />
-                                                    <p className="text-xs font-bold uppercase tracking-widest">Awaiting Technician</p>
-                                                    <p className="text-[10px] mt-1 font-medium">No technical protocol logged yet.</p>
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase">
+                                                    <AlertTriangle className={cn("w-3.5 h-3.5", req.priority === 'High' ? 'text-rose-500' : 'text-amber-500')} />
+                                                    <span className={req.priority === 'High' ? 'text-rose-500' : 'text-amber-500'}>{req.priority} Priority</span>
+                                                </div>
+                                            </div>
+                                            
+                                            {req.issue_photo && (
+                                                <div className="relative group/photo mt-4 rounded-xl overflow-hidden border border-border aspect-video bg-muted max-w-sm">
+                                                    <img src={req.issue_photo} alt="Issue" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Right Panel: The Resolution */}
+                                    <div className="p-6 lg:p-8 lg:w-[380px] bg-muted/20">
+                                        {task ? (
+                                            <div className="space-y-6 h-full flex flex-col">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-700">Resolution</span>
+                                                    </div>
+                                                    {task.cost > 0 && (
+                                                        <p className="text-xs font-bold text-emerald-700">₱{task.cost.toLocaleString()}</p>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex-1 space-y-4">
+                                                    <p className="text-xs text-foreground/80 leading-relaxed pl-3 border-l-2 border-emerald-500/30 italic">
+                                                        "{task.maintenance_notes || 'Standard protocol resolution.'}"
+                                                    </p>
+
+                                                    {task.materials_used && (
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {task.materials_used.split(',').map((m, i) => (
+                                                                <span key={i} className="text-[9px] font-bold bg-card border border-border px-2 py-1 rounded text-muted-foreground/80 uppercase">
+                                                                    {m.trim()}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="pt-4 border-t border-border/40">
+                                                    <p className="text-[9px] font-bold text-muted-foreground/40 uppercase mb-1">Technician</p>
+                                                    <p className="text-[11px] font-bold text-foreground">{task.assigned_to_name || 'System Operator'}</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="h-full flex flex-col items-center justify-center text-center">
+                                                <Hammer className="w-8 h-8 text-muted-foreground/20 mb-3" />
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Awaiting Action</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </motion.div>
-                        );
+                            </div>
+                        )
                     })}
-                </motion.div>
+                </div>
             </div>
         </div>
     );
