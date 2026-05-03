@@ -124,6 +124,29 @@ export const templates = {
 };
 
 /**
+ * Creates an in-app notification in the Supabase database.
+ */
+export async function createInAppNotification({ user_email, title, message, type = 'info', link = null }) {
+    try {
+        // @ts-ignore - notifications table is newly created and not yet in types
+        const { error } = await supabase.from('notifications')
+            .insert([{
+                user_email,
+                title,
+                message,
+                type,
+                link
+            }]);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('[Notifications] Failed to create in-app notification:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Notify principals about a new damage report.
  */
 export async function notifyPrincipalOfNewReport(report, manualEmail = null) {
@@ -147,6 +170,18 @@ export async function notifyPrincipalOfNewReport(report, manualEmail = null) {
         }
 
         const template = templates.newReport(report);
+        
+        // 🔔 Create In-App Notifications for all principals
+        for (const email of emails) {
+            createInAppNotification({
+                user_email: email,
+                title: 'New Damage Report',
+                message: `${report.reported_by_name} reported an issue with ${report.asset_name}.`,
+                type: 'warning',
+                link: '/repair-requests'
+            });
+        }
+
         return await sendEmail({
             to: emails,
             subject: template.subject,
@@ -165,6 +200,15 @@ export async function notifyTechnicianOfAssignment(task) {
     if (!task.assigned_to_email) return { success: false, error: 'No email provided' };
 
     try {
+        // 🔔 Create In-App Notification
+        createInAppNotification({
+            user_email: task.assigned_to_email,
+            title: 'New Task Assigned',
+            message: `You have been assigned to repair ${task.asset_name} at ${task.school_name}.`,
+            type: 'info',
+            link: '/tasks'
+        });
+
         const template = templates.taskAssigned(task);
         return await sendEmail({
             to: task.assigned_to_email,
@@ -184,6 +228,15 @@ export async function notifyTechnicianOfRework(report, feedback) {
     if (!report.assigned_to_email) return { success: false, error: 'No email provided' };
 
     try {
+        // 🔔 Create In-App Notification
+        createInAppNotification({
+            user_email: report.assigned_to_email,
+            title: 'Rework Requested',
+            message: `Additional work is required for ${report.asset_name}. Feedback: ${feedback}`,
+            type: 'error',
+            link: '/tasks'
+        });
+
         const template = templates.reworkRequested(report, feedback);
         return await sendEmail({
             to: report.assigned_to_email,
@@ -203,6 +256,15 @@ export async function notifyTechnicianOfVerification(report) {
     if (!report.assigned_to_email) return { success: false, error: 'No email provided' };
 
     try {
+        // 🔔 Create In-App Notification
+        createInAppNotification({
+            user_email: report.assigned_to_email,
+            title: 'Repair Verified',
+            message: `Your repair for ${report.asset_name} has been verified and closed. Great job!`,
+            type: 'success',
+            link: '/tasks'
+        });
+
         const template = templates.repairVerified(report);
         return await sendEmail({
             to: report.assigned_to_email,
@@ -222,6 +284,15 @@ export async function notifyTeacherOfApproval(report) {
     if (!report.reported_by_email) return { success: false, error: 'No email provided' };
 
     try {
+        // 🔔 Create In-App Notification
+        createInAppNotification({
+            user_email: report.reported_by_email,
+            title: 'Repair Approved',
+            message: `Your report for ${report.asset_name} has been approved and assigned to ${report.assigned_to_name}.`,
+            type: 'success',
+            link: '/report-damage'
+        });
+
         const template = {
             subject: `Repair Approved: ${report.asset_name}`,
             html: `
@@ -247,6 +318,50 @@ export async function notifyTeacherOfApproval(report) {
         });
     } catch (error) {
         console.error('[Notifications] notifyTeacher failed:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Notify a teacher that a repair is finished and needs verification.
+ */
+export async function notifyTeacherOfCompletion(report) {
+    if (!report.reported_by_email) return { success: false, error: 'No email provided' };
+
+    try {
+        // 🔔 Create In-App Notification
+        createInAppNotification({
+            user_email: report.reported_by_email,
+            title: 'Repair Ready for Verification',
+            message: `The maintenance for ${report.asset_name} is complete. Please verify the work to close the case.`,
+            type: 'info',
+            link: '/report-damage'
+        });
+
+        const template = {
+            subject: `Repair Complete: ${report.asset_name}`,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+                    <div style="background-color: #065f46; color: white; padding: 24px; text-align: center;">
+                        <h1 style="margin: 0; font-size: 20px;">Repair Complete</h1>
+                    </div>
+                    <div style="padding: 24px; color: #374151;">
+                        <p>The repair for <strong>${report.asset_name}</strong> is now finished.</p>
+                        <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0;">
+                            <p style="margin: 0;"><strong>Status:</strong> Pending Your Verification</p>
+                        </div>
+                        <p style="font-size: 14px; color: #6b7280;">Please log in to verify the repair and close the case.</p>
+                    </div>
+                </div>
+            `
+        };
+        return await sendEmail({
+            to: report.reported_by_email,
+            subject: template.subject,
+            html: template.html
+        });
+    } catch (error) {
+        console.error('[Notifications] notifyTeacherCompletion failed:', error);
         return { success: false, error: error.message };
     }
 }
