@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
-import { AlertTriangle, Search, CheckCircle, AlertCircle, ArrowUpCircle, Wrench, ChevronRight, School, UserCircle, Send, X, Check, Image as ImageIcon, Hash, Clock, ShieldCheck, Activity, Shield, Camera } from 'lucide-react';
+import { AlertTriangle, Search, CheckCircle, AlertCircle, ArrowUpCircle, Wrench, ChevronRight, School, UserCircle, Send, X, Check, Image as ImageIcon, Hash, Clock, ShieldCheck, Activity, Shield, Camera, History as HistoryIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -252,13 +253,20 @@ export default function PrincipalRepairRequests() {
                                         <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">{selected.request_number || '#REQ-NEW'}</span>
                                     </div>
 
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-foreground tracking-tight leading-tight">{selected.asset_name}</h2>
-                                        <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                                            <span className="w-1 h-1 rounded-full bg-muted-foreground/40"></span>
-                                            {selected.school_name || 'Central Campus'}
-                                        </p>
-                                    </div>
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-foreground tracking-tight leading-tight">{selected.asset_name}</h2>
+                                                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/40"></span>
+                                                    {selected.school_name || 'Central Campus'}
+                                                </p>
+                                            </div>
+                                            <Link to={`/assets/${selected.asset_id || selected.id}/history`}>
+                                                <Button variant="outline" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest gap-2">
+                                                    <HistoryIcon className="w-3.5 h-3.5" /> View Full History
+                                                </Button>
+                                            </Link>
+                                        </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-background/60 p-3 rounded-xl border border-border/40">
