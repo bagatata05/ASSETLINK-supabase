@@ -1,4 +1,5 @@
-const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY;
+const resendApiKey = import.meta.env.VITE_RESEND_API_KEY;
+
 import { supabase } from './supabase';
 
 /**
@@ -7,8 +8,8 @@ import { supabase } from './supabase';
  * to keep the API key secure and avoid CORS issues.
  */
 export async function sendEmail({ to, subject, html }) {
-    if (!RESEND_API_KEY) {
-        console.warn('[Notifications] Resend API key is missing. Email not sent.');
+    if (!resendApiKey) {
+        console.log('[Notifications] Skip Email: No API Key');
         return { success: false, error: 'Missing API Key' };
     }
 
@@ -17,10 +18,10 @@ export async function sendEmail({ to, subject, html }) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${RESEND_API_KEY}`,
+                'Authorization': `Bearer ${resendApiKey}`,
             },
             body: JSON.stringify({
-                from: 'AssetLink <onboarding@resend.dev>', // Resend's default testing email
+                from: 'AssetLink <onboarding@resend.dev>',
                 to: Array.isArray(to) ? to : [to],
                 subject: `[AssetLink] ${subject}`,
                 html: html,
@@ -28,11 +29,8 @@ export async function sendEmail({ to, subject, html }) {
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to send email');
-        }
-
+        if (!response.ok) throw new Error(data.message || 'Failed to send email');
+        
         console.log('[Notifications] Email sent successfully:', data.id);
         return { success: true, id: data.id };
     } catch (error) {
@@ -163,17 +161,18 @@ export async function notifyPrincipalOfNewReport(report, manualEmail = null) {
         if (manualEmail) {
             emails = [manualEmail];
         } else {
+            // ✅ Case-insensitive role matching to handle "ADMIN", "Admin", or "admin"
             const { data: recipients, error } = await supabase
                 .from('profiles')
                 .select('email')
-                .in('role', ['principal', 'admin']);
+                .or('role.ilike.principal,role.ilike.admin');
 
             if (error) {
                 console.error('[Notifications] Recipient Fetch Error:', error);
                 throw error;
             }
             emails = recipients?.map(p => p.email).filter(Boolean);
-            console.log(`[Notifications] Found ${emails.length} recipients for report:`, emails);
+            console.log(`[Notifications] Found ${emails.length} recipients for role Principal/Admin:`, emails);
         }
 
         if (!emails || emails.length === 0) {
