@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
-import { Wrench, CheckCircle, Clock, AlertCircle, Camera, Image as ImageIcon, UploadCloud, X, ArrowRight, Shield } from 'lucide-react';
+import { Wrench, CheckCircle, Clock, AlertCircle, Camera, Image as ImageIcon, UploadCloud, X, ArrowRight, Shield, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -363,6 +363,24 @@ export default function Tasks() {
                                             </div>
                                         </div>
                                     )}
+
+                                    <div className="pt-4 mt-6 border-t border-border/50">
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="w-full flex items-center justify-center gap-2 border-primary/20 hover:bg-primary/5 hover:border-primary/40 text-primary transition-all group"
+                                            onClick={() => {
+                                                const link = `/assets/${selected.asset_id}/history`;
+                                                window.location.href = link;
+                                            }}
+                                        >
+                                            <Activity className="w-4 h-4 group-hover:animate-pulse" />
+                                            <span className="font-semibold">Analyze System X-Ray</span>
+                                        </Button>
+                                        <p className="text-[10px] text-muted-foreground mt-2 text-center">
+                                            Access full lifecycle and diagnostic history for this asset.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
