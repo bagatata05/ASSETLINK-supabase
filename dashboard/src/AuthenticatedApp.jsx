@@ -25,7 +25,7 @@ import UserApprovals from './pages/principal/UserApprovals';
 // Admin/System Pages
 import Assets from './pages/admin/Assets';
 import Analytics from './pages/admin/Analytics';
-import Schools from './pages/admin/Schools';
+
 
 // Repair & Damage Pages
 import RepairRequestsTeacher from './pages/teacher/RepairRequests';
@@ -181,7 +181,7 @@ const AuthenticatedApp = () => {
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/calendar" element={<MaintenanceCalendar />} />
-                <Route path="/schools" element={<Schools />} />
+
                 <Route path="/user-approvals" element={<UserApprovals />} />
                 <Route path="/asset-view" element={<AssetPublic />} />
                 <Route path="/profile" element={<Profile />} />
