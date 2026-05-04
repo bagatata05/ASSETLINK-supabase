@@ -1,8 +1,9 @@
-import { Building2, GraduationCap, Landmark, ShieldCheck, Users } from "lucide-react"
+import { ShieldCheck, Users, QrCode, Activity } from "lucide-react"
 import { Parallax, Reveal, StaggerGroup, StaggerItem } from "./motion"
 
 const ITEMS = [
-  { icon: Landmark, label: "Barangay visibility" },
+  { icon: QrCode, label: "QR-enabled registry" },
+  { icon: Activity, label: "System X-Ray diagnostics" },
   { icon: Users, label: "Multi-role workflow" },
   { icon: ShieldCheck, label: "Privacy-conscious" },
 ]
