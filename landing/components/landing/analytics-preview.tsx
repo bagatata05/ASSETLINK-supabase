@@ -1,8 +1,9 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import { TrendingDown, TrendingUp } from "lucide-react"
 import { useInView } from "framer-motion"
+import { supabase } from "@/lib/supabase"
 import {
   Bar,
   BarChart,
@@ -24,7 +25,7 @@ import {
 import { Reveal, StaggerGroup, StaggerItem } from "./motion"
 import { Counter } from "./counter"
 
-const resolutionData = [
+const mockResolutionData = [
   { month: "Oct", days: 5.8 },
   { month: "Nov", days: 4.9 },
   { month: "Dec", days: 4.1 },
@@ -37,20 +38,16 @@ const resolutionConfig: ChartConfig = {
   days: { label: "Avg. resolution (days)", color: "var(--primary)" },
 }
 
-const damageData = [
-  { type: "Furniture", tickets: 42 },
-  { type: "Electrical", tickets: 31 },
-  { type: "Plumbing", tickets: 24 },
-  { type: "Windows", tickets: 18 },
-  { type: "Structural", tickets: 12 },
-  { type: "Other", tickets: 8 },
+const mockInventoryData = [
+  { type: "Furniture", count: 2 },
+  { type: "Electronics", count: 2 },
 ]
 
-const damageConfig: ChartConfig = {
-  tickets: { label: "Tickets", color: "var(--primary)" },
+const inventoryConfig: ChartConfig = {
+  count: { label: "Assets", color: "var(--primary)" },
 }
 
-const statusData = [
+const mockStatusData = [
   { name: "Resolved", value: 128, fill: "var(--primary)" },
   { name: "In progress", value: 28, fill: "color-mix(in oklch, var(--primary) 55%, white)" },
   { name: "Open", value: 14, fill: "var(--accent)" },
@@ -64,7 +61,89 @@ const statusConfig: ChartConfig = {
 }
 
 export function AnalyticsPreview() {
+  const [resolutionData, setResolutionData] = useState<any[]>(mockResolutionData)
+  const [inventoryData, setInventoryData] = useState<any[]>(mockInventoryData)
+  const [statusData, setStatusData] = useState<any[]>(mockStatusData)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [{ data: reqData }, { data: assetData }] = await Promise.all([
+          supabase.from('repair_requests').select('*'),
+          supabase.from('assets').select('*')
+        ]);
+        
+        if (!reqData || !assetData) return;
+
+        // 1. Status Data
+        const resolved = reqData.filter(r => r.status === 'Completed').length;
+        const inProgress = reqData.filter(r => r.status === 'In Progress').length;
+        const open = reqData.filter(r => r.status === 'Pending').length;
+        
+        setStatusData([
+          { name: "Resolved", value: resolved, fill: "var(--primary)" },
+          { name: "In progress", value: inProgress, fill: "color-mix(in oklch, var(--primary) 55%, white)" },
+          { name: "Open", value: open, fill: "var(--accent)" },
+        ]);
+
+        // 2. Inventory Data
+        const categories = ['Furniture', 'Electronics', 'Laboratory Equipment', 'Sports Equipment', 'Books & Materials', 'Appliances', 'Structural', 'Other'];
+        const inventoryCounts = categories.map(type => {
+          const count = assetData.filter(a => a.category === type).length;
+          return { type, count };
+        }).filter(d => d.count > 0).sort((a, b) => b.count - a.count).slice(0, 6);
+
+        if (assetData.length > 0) {
+          setInventoryData(inventoryCounts);
+        } else {
+          setInventoryData(mockInventoryData);
+        }
+
+        // 3. Resolution Data (Avg days per month for last 6 months)
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const now = new Date();
+        const last6Months = Array.from({ length: 6 }, (_, i) => {
+          const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+          return {
+             month: monthNames[d.getMonth()],
+             year: d.getFullYear(),
+             monthIndex: d.getMonth(),
+             totalDays: 0,
+             count: 0
+          };
+        });
+
+        reqData.filter(r => r.status === 'Completed' && r.created_at && r.completed_at).forEach(r => {
+           const created = new Date(r.created_at!);
+           const completed = new Date(r.completed_at!);
+           const days = (completed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
+           
+           const targetMonth = last6Months.find(m => m.year === completed.getFullYear() && m.monthIndex === completed.getMonth());
+           if (targetMonth) {
+              targetMonth.totalDays += days;
+              targetMonth.count += 1;
+           }
+        });
+
+        const resData = last6Months.map(m => ({
+           month: m.month,
+           days: m.count > 0 ? Number((m.totalDays / m.count).toFixed(1)) : 0
+        }));
+        
+        setResolutionData(resData);
+
+      } catch (error) {
+        console.error("Error fetching analytics data:", error);
+      }
+    };
+    
+    fetchData();
+  }, []);
+
   const statusTotal = statusData.reduce((acc, d) => acc + d.value, 0)
+  const avgDays = resolutionData.length > 0 ? Number((resolutionData.reduce((acc, d) => acc + d.days, 0) / resolutionData.length).toFixed(1)) : 0;
+  const totalAssets = inventoryData.reduce((acc, d) => acc + d.count, 0);
+
   const containerRef = useRef(null)
   const isVisible = useInView(containerRef, { amount: 0.3, once: false })
 
@@ -97,7 +176,7 @@ export function AnalyticsPreview() {
               <div>
                 <p className="text-xs text-muted-foreground">Avg. resolution time</p>
                 <div className="mt-1 flex items-baseline gap-2 font-serif text-2xl sm:text-3xl">
-                  <Counter to={1.8} decimals={1} suffix="d" duration={1.5} once={false} />
+                  <Counter to={avgDays} decimals={1} suffix="d" duration={1.5} once={false} />
                   <span className="inline-flex items-center gap-0.5 text-xs font-sans font-medium text-primary">
                     <TrendingDown className="h-3 w-3" aria-hidden="true" />
                     −69%
@@ -142,16 +221,15 @@ export function AnalyticsPreview() {
             </ChartContainer>
           </StaggerItem>
 
-          {/* Damage patterns */}
+          {/* Inventory Distribution */}
           <StaggerItem as="article" className="rounded-2xl border border-border bg-card p-4 sm:p-5 transition-shadow duration-300 hover:shadow-md">
             <header className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-xs text-muted-foreground">Damage patterns — school-wide</p>
+                <p className="text-xs text-muted-foreground">Asset inventory distribution</p>
                 <div className="mt-1 flex items-baseline gap-2 font-serif text-2xl sm:text-3xl">
-                  <Counter to={135} duration={1.2} once={false} />
-                  <span className="inline-flex items-center gap-0.5 text-xs font-sans font-medium text-accent-foreground">
-                    <TrendingUp className="h-3 w-3" aria-hidden="true" />
-                    this quarter
+                  <Counter to={totalAssets} duration={1.2} once={false} />
+                  <span className="inline-flex items-center gap-0.5 text-xs font-sans font-medium text-muted-foreground">
+                    registered assets
                   </span>
                 </div>
               </div>
@@ -159,10 +237,10 @@ export function AnalyticsPreview() {
                 By category
               </span>
             </header>
-            <ChartContainer config={damageConfig} className="mt-4 h-40 sm:h-44 w-full">
+            <ChartContainer config={inventoryConfig} className="mt-4 h-40 sm:h-44 w-full">
               <BarChart 
                 key={isVisible ? "visible" : "hidden"}
-                data={isVisible ? damageData : []} 
+                data={isVisible ? inventoryData : []} 
                 margin={{ top: 8, right: 4, left: -24, bottom: 0 }}
               >
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
@@ -181,8 +259,8 @@ export function AnalyticsPreview() {
                 />
                 <ChartTooltip cursor={{ fill: "var(--secondary)" }} content={<ChartTooltipContent />} />
                 <Bar 
-                  dataKey="tickets" 
-                  fill="var(--color-tickets)" 
+                  dataKey="count" 
+                  fill="var(--color-count)" 
                   radius={[6, 6, 0, 0]} 
                   animationDuration={1200}
                   animationBegin={400}
