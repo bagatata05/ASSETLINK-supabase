@@ -3,9 +3,21 @@ import { Bell, CheckCircle, AlertCircle, Info, X, ExternalLink, Trash2 } from 'l
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+
+/** Lightweight relative time helper (avoids date-fns dependency) */
+function timeAgo(dateStr) {
+    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(dateStr).toLocaleDateString();
+}
 
 export default function NotificationCenter() {
     const { currentUser } = useAuth();
@@ -215,7 +227,7 @@ export default function NotificationCenter() {
                                                         {n.title}
                                                     </h5>
                                                     <span className="text-[10px] text-muted-foreground whitespace-nowrap pt-0.5 font-medium italic">
-                                                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                                                        {timeAgo(n.created_at)}
                                                     </span>
                                                 </div>
                                                 <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
