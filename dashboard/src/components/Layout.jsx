@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import {
     Menu, X, LogOut, LayoutDashboard, Package, AlertTriangle,
-    Wrench, BarChart3, CalendarDays, School, Eye, ChevronRight, UserCircle, ShieldCheck
+    Wrench, BarChart3, CalendarDays, Eye, ChevronRight, UserCircle, ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sileo } from 'sileo';
@@ -20,7 +20,7 @@ const navItems = [
     { path: '/tasks', label: 'My Tasks', icon: Wrench, roles: ['maintenance'] },
     { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'principal'] },
     { path: '/calendar', label: 'Calendar', icon: CalendarDays, roles: ['admin', 'maintenance', 'principal'] },
-    { path: '/schools', label: 'Schools', icon: School, roles: ['admin', 'principal'] },
+
     { path: '/profile', label: 'Profile', icon: UserCircle, roles: ['admin', 'teacher', 'principal', 'maintenance'] },
     { path: '/user-approvals', label: 'User Approvals', icon: ShieldCheck, roles: ['admin', 'principal'] },
 ];
@@ -28,7 +28,7 @@ const navItems = [
 const navGroups = [
     { label: 'Main', paths: ['/', '/assets', '/repair-requests', '/report-damage'] },
     { label: 'Operations', paths: ['/tasks', '/calendar', '/user-approvals'] },
-    { label: 'Intelligence', paths: ['/analytics', '/schools', '/oversight'] },
+    { label: 'Intelligence', paths: ['/analytics', '/oversight'] },
     { label: 'Account', paths: ['/profile'] },
 ];
 
@@ -191,7 +191,8 @@ export default function Layout() {
                             </span>
                             <span className="label-mono text-[10px]">Operational</span>
                         </div>
-                        
+
+
                         <ThemeToggle />
                     </div>
                 </header>
