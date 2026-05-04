@@ -39,7 +39,7 @@ export default function Analytics() {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchData)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, fetchData)
             .subscribe();
-        return () => supabase.removeChannel(channel);
+        return () => { supabase.removeChannel(channel); };
     }, []);
 
     // Status distribution
