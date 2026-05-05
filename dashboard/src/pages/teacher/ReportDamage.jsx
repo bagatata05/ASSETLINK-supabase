@@ -69,8 +69,27 @@ export default function ReportDamage() {
     function handlePhoto(e) {
         const file = e.target.files[0];
         if (!file) return;
+        
+        // Limit file size check (optional but good practice)
+        if (file.size > 10 * 1024 * 1024) {
+            sileo.error({
+                title: 'File Too Large',
+                description: 'Please upload an image smaller than 10MB.'
+            });
+            return;
+        }
+
         setPhoto(file);
-        setPhotoPreview(URL.createObjectURL(file));
+        
+        // Use FileReader for more stable previews on mobile browsers
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPhotoPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+        
+        // Clear the input value so the same file (or a retake) triggers the change event again
+        e.target.value = '';
     }
 
     async function handleSubmit() {
@@ -225,7 +244,7 @@ export default function ReportDamage() {
                                 </div>
                             )}
                         </div>
-                        <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhoto} />
+                        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
                         
                         <div className="p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground leading-relaxed">
                             <span className="font-medium text-foreground">Tip:</span> Clear photos help the maintenance team understand the issue before arriving on site.
