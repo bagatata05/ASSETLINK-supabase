@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock, Eye, EyeOff, QrCode, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Eye, EyeOff, QrCode, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { sileo } from "sileo";
 import { supabase } from '@/lib/supabase';
