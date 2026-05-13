@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { Camera, Upload, Search, AlertTriangle, CheckCircle, QrCode, X, Package } from 'lucide-react';
+import { Camera, Upload, Search, AlertTriangle, CheckCircle, X, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,7 @@ export default function ReportDamage() {
     const [photoPreview, setPhotoPreview] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [done, setDone] = useState(false);
-    const [showQR, setShowQR] = useState(false);
+
     /** @type {React.MutableRefObject<HTMLInputElement | null>} */
     const fileRef = useRef(null);
 
