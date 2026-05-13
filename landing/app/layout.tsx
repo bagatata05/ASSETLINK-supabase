@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { SmoothScroll } from "@/components/landing/smooth-scroll"
+import Script from "next/script"
 import "./globals.css"
 
 const inter = Inter({
@@ -55,19 +56,20 @@ export default function RootLayout({
       className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} bg-background`}
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                window.addEventListener('pageshow', function(event) {
-                  if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-                    window.location.reload();
-                  }
-                });
-              })();
-            `,
-          }}
-        />
+        <Script
+          id="pageshow-reload"
+          strategy="beforeInteractive"
+        >
+          {`
+            (function() {
+              window.addEventListener('pageshow', function(event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                  window.location.reload();
+                }
+              });
+            })();
+          `}
+        </Script>
       </head>
       <body className="relative font-sans antialiased">
         <SmoothScroll>
