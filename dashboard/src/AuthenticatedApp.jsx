@@ -11,6 +11,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 
 // Layout
 import Layout from './components/Layout';
+import DashboardLoading from './components/DashboardLoading';
 
 // Shared Pages
 import Profile from './pages/shared/Profile';
@@ -52,16 +53,7 @@ const AuthenticatedApp = () => {
 
     // ✅ 1. ALWAYS wait for auth to resolve
     if (isLoadingAuth) {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center bg-background">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin"></div>
-                    <p className="text-sm font-medium text-muted-foreground animate-pulse">
-                        Authenticating...
-                    </p>
-                </div>
-            </div>
-        );
+        return <DashboardLoading />;
     }
 
     // ✅ 2. NOT LOGGED IN → allow only auth pages
@@ -78,14 +70,7 @@ const AuthenticatedApp = () => {
 
     // ✅ 3. LOGGED IN but ROLE still loading → show loading (prevents wrong redirect)
     if (currentUser && role === 'loading') {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center bg-background">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-600 rounded-full animate-spin"></div>
-                    <p className="text-sm text-muted-foreground">Loading profile...</p>
-                </div>
-            </div>
-        );
+        return <DashboardLoading />;
     }
 
     // ✅ 4. ROLE STILL NOT SET (after loading) → go to role selection
