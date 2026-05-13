@@ -12,6 +12,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 // Layout
 import Layout from './components/Layout';
 import DashboardLoading from './components/DashboardLoading';
+import AuthLoading from './components/AuthLoading';
 
 // Shared Pages
 import Profile from './pages/shared/Profile';
@@ -53,7 +54,9 @@ const AuthenticatedApp = () => {
 
     // ✅ 1. ALWAYS wait for auth to resolve
     if (isLoadingAuth) {
-        return <DashboardLoading />;
+        // If the user is at /login or /register, show the Auth skeleton
+        const isAuthPage = ['/login', '/register', '/reset-password'].includes(window.location.pathname);
+        return isAuthPage ? <AuthLoading /> : <DashboardLoading />;
     }
 
     // ✅ 2. NOT LOGGED IN → allow only auth pages
