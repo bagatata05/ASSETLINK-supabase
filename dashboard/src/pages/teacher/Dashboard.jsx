@@ -12,25 +12,25 @@ import { cn } from '@/lib/utils';
 export default function TeacherDashboard() {
     const { currentUser } = useAuth();
     const [requests, setRequests] = useState([]);
-    const [assets, setAssets] = useState([]);
+    const [assetCount, setAssetCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         if (!currentUser) return;
 
         try {
-            // 1. Fetch Assets
-            const { data: assetsData } = await supabase
+            // 1. Fetch Assets Count
+            const { count, error: assetsError } = await supabase
                 .from('assets')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('*', { count: 'exact', head: true });
+            if (assetsError) throw assetsError;
             
-            setAssets(assetsData || []);
+            setAssetCount(count || 0);
 
             // 2. Fetch Repair Requests for this user or their school
             const { data: requestsData } = await supabase
                 .from('repair_requests')
-                .select('*')
+                .select('id, asset_name, description, priority, status, created_at')
                 .or(`reported_by_email.eq.${currentUser.email},reported_by_name.eq.${currentUser.full_name},school_id.eq.${currentUser.school_id}`)
                 .order('created_at', { ascending: false });
 
@@ -81,7 +81,7 @@ export default function TeacherDashboard() {
                         Good {getGreeting()}, {currentUser?.full_name?.split(' ')[0] || 'Teacher'}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                        Tracking {assets.length} assets · {pending} pending reviews
+                        Tracking {assetCount} assets · {pending} pending reviews
                     </p>
                 </div>
                 <Link to="/report-damage">
@@ -94,7 +94,7 @@ export default function TeacherDashboard() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatsCard title="Assets" value={assets.length} subtitle="Managed equipment" icon={Package} color="teal" />
+                <StatsCard title="Assets" value={assetCount} subtitle="Managed equipment" icon={Package} color="teal" />
                 <StatsCard title="Pending" value={pending} subtitle="Awaiting review" icon={Clock} color="amber" />
                 <StatsCard title="In Progress" value={inProgress} subtitle="Active work orders" icon={Wrench} color="blue" />
                 <StatsCard title="Critical" value={critical} subtitle="High priority" icon={AlertTriangle} color="red" />
