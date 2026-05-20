@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import StatusBadge from '../../components/StatusBadge';
-import { ChevronLeft, ChevronRight, CalendarDays, Wrench, AlertTriangle, Clock, Lock, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wrench, AlertTriangle, Clock, Lock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -92,7 +92,7 @@ export default function MaintenanceCalendar() {
         return () => { supabase.removeChannel(subscription); };
     }, [currentUser, weekStart]);
 
-    const loadTasks = () => {};
+
 
     function distribute(data) {
         const days = {};
@@ -178,7 +178,8 @@ export default function MaintenanceCalendar() {
             const { error } = await supabase.from('maintenance_tasks').update(updatePayload).eq('id', taskId);
             if (error) throw error;
             toast.success(destDate ? `Task scheduled for ${format(parseISO(destDate), 'EEE, MMM d')}` : 'Task moved to unscheduled');
-        } catch (err) {
+        } catch (error) {
+            console.error('Failed to update task:', error);
             toast.error('Failed to update task');
         } finally {
             setSaving(false);
