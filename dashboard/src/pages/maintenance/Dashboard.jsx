@@ -8,7 +8,6 @@ import { AlertTriangle, Wrench, CheckCircle, Clock, ArrowUpRight, TrendingUp, Ca
 import { Button } from '@/components/ui/button';
 import { getSLAStatus } from '@/lib/slaUtils';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 export default function MaintenanceDashboard() {
     const { currentUser } = useAuth();
@@ -20,7 +19,8 @@ export default function MaintenanceDashboard() {
         try {
             const { data, error } = await supabase
                 .from('maintenance_tasks')
-                .select('*')
+                .select('id, status, priority, created_at, asset_name, school_name, assigned_to_name, assigned_to_email, sla_deadline')
+                .or(`assigned_to_email.eq.${currentUser.email},assigned_to_name.ilike.%${currentUser.full_name}%`)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
