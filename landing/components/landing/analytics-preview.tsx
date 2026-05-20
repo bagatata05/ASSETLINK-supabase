@@ -69,16 +69,16 @@ export function AnalyticsPreview() {
     const fetchData = async () => {
       try {
         const [{ data: reqData }, { data: assetData }] = await Promise.all([
-          supabase.from('repair_requests').select('*'),
-          supabase.from('assets').select('*')
+          supabase.from('repair_requests').select('status,created_at,completed_at'),
+          supabase.from('assets').select('category')
         ]);
         
         if (!reqData || !assetData) return;
 
         // 1. Status Data
-        const resolved = reqData.filter(r => r.status === 'Completed').length;
-        const inProgress = reqData.filter(r => r.status === 'In Progress').length;
-        const open = reqData.filter(r => r.status === 'Pending').length;
+        const resolved = reqData.filter((r: any) => r.status === 'Completed').length;
+        const inProgress = reqData.filter((r: any) => r.status === 'In Progress').length;
+        const open = reqData.filter((r: any) => r.status === 'Pending').length;
         
         setStatusData([
           { name: "Resolved", value: resolved, fill: "var(--primary)" },
@@ -89,9 +89,9 @@ export function AnalyticsPreview() {
         // 2. Inventory Data
         const categories = ['Furniture', 'Electronics', 'Laboratory Equipment', 'Sports Equipment', 'Books & Materials', 'Appliances', 'Structural', 'Other'];
         const inventoryCounts = categories.map(type => {
-          const count = assetData.filter(a => a.category === type).length;
+          const count = assetData.filter((a: any) => a.category === type).length;
           return { type, count };
-        }).filter(d => d.count > 0).sort((a, b) => b.count - a.count).slice(0, 6);
+        }).filter((d: any) => d.count > 0).sort((a: any, b: any) => b.count - a.count).slice(0, 6);
 
         if (assetData.length > 0) {
           setInventoryData(inventoryCounts);
@@ -113,7 +113,7 @@ export function AnalyticsPreview() {
           };
         });
 
-        reqData.filter(r => r.status === 'Completed' && r.created_at && r.completed_at).forEach(r => {
+        reqData.filter((r: any) => r.status === 'Completed' && r.created_at && r.completed_at).forEach((r: any) => {
            const created = new Date(r.created_at!);
            const completed = new Date(r.completed_at!);
            const days = (completed.getTime() - created.getTime()) / (1000 * 60 * 60 * 24);
@@ -140,9 +140,9 @@ export function AnalyticsPreview() {
     fetchData();
   }, []);
 
-  const statusTotal = statusData.reduce((acc, d) => acc + d.value, 0)
-  const avgDays = resolutionData.length > 0 ? Number((resolutionData.reduce((acc, d) => acc + d.days, 0) / resolutionData.length).toFixed(1)) : 0;
-  const totalAssets = inventoryData.reduce((acc, d) => acc + d.count, 0);
+  const statusTotal = statusData.reduce((acc: number, d: any) => acc + d.value, 0)
+  const avgDays = resolutionData.length > 0 ? Number((resolutionData.reduce((acc: number, d: any) => acc + d.days, 0) / resolutionData.length).toFixed(1)) : 0;
+  const totalAssets = inventoryData.reduce((acc: number, d: any) => acc + d.count, 0);
 
   const containerRef = useRef(null)
   const isVisible = useInView(containerRef, { amount: 0.3, once: false })
@@ -298,14 +298,14 @@ export function AnalyticsPreview() {
                     animationDuration={1000}
                     animationBegin={600}
                   >
-                    {statusData.map((entry) => (
+                    {statusData.map((entry: any) => (
                       <Cell key={entry.name} fill={entry.fill} />
                     ))}
                   </Pie>
                 </PieChart>
               </ChartContainer>
               <ul className="w-full sm:flex-1 space-y-2 text-xs">
-                {statusData.map((s) => (
+                {statusData.map((s: any) => (
                   <li key={s.name} className="flex items-center justify-between gap-2 py-1 border-b border-border/40 last:border-0 sm:border-0">
                     <span className="flex items-center gap-2 text-muted-foreground">
                       <span
