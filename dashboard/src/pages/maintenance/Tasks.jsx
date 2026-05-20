@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
-import { Wrench, CheckCircle, Clock, AlertCircle, Camera, Image as ImageIcon, UploadCloud, X, ArrowRight, Shield, Activity } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Image as ImageIcon, UploadCloud, X, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { sileo } from 'sileo';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
 import { notifyTeacherOfCompletion } from '@/lib/notifications';
 
