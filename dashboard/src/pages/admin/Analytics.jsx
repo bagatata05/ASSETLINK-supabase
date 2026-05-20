@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { TrendingUp, Download, BarChart3, PieChart as PieIcon, Activity } from 'lucide-react';
+import { TrendingUp, Download, BarChart3, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, subDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -11,20 +11,17 @@ const COLORS = ['#0d9488', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6', '#10b981'
 export default function Analytics() {
     const [requests, setRequests] = useState([]);
     const [assets, setAssets] = useState([]);
-    const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [{ data: reqData }, { data: assetData }, { data: taskData }] = await Promise.all([
-                supabase.from('repair_requests').select('*'),
-                supabase.from('assets').select('*'),
-                supabase.from('maintenance_tasks').select('*')
+            const [{ data: reqData }, { data: assetData }] = await Promise.all([
+                supabase.from('repair_requests').select('status, priority, created_at, completed_at, asset_id'),
+                supabase.from('assets').select('id, category')
             ]);
             setRequests(reqData || []);
             setAssets(assetData || []);
-            setTasks(taskData || []);
         } catch (error) {
             console.error('Analytics error:', error);
         } finally {
@@ -37,7 +34,6 @@ export default function Analytics() {
         const channel = supabase.channel('analytics-page')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'repair_requests' }, fetchData)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchData)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_tasks' }, fetchData)
             .subscribe();
         return () => { supabase.removeChannel(channel); };
     }, []);
