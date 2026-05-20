@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import StatsCard from '../../components/StatsCard';
 import StatusBadge from '../../components/StatusBadge';
-import { CalendarDays, AlertTriangle, Clock, Wrench, CheckCircle, ArrowUpRight, TrendingUp } from 'lucide-react';
+import { AlertTriangle, Clock, Wrench, CheckCircle, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, parseISO, isToday } from 'date-fns';
 import { supabase } from '@/lib/supabase';
@@ -24,7 +24,7 @@ export default function PrincipalDashboard() {
             // 📊 Fetch Repair Requests
             const { data: reqData, error: reqError } = await supabase
                 .from('repair_requests')
-                .select('*')
+                .select('id, asset_name, status, priority, created_at, scheduled_start_date, reported_by_name, school_name')
                 .order('created_at', { ascending: false });
             if (reqError) throw reqError;
             setRequests(reqData || []);
